@@ -8,6 +8,9 @@ import { AccountRepositorySequelize } from "./infrastructure/db/sequelize/Accoun
 import { BcryptCryptographyService } from "./infrastructure/services/cryptography/BcryptCryptographyService";
 import { CreateAccountUseCase } from "./application/useCases/CreateAccount/CreateAccountUseCase";
 import { createAuthRouter } from "./interfaces/http/express/routes/authRoutes";
+import { LoginUseCase } from "./application/useCases/Login/LoginUseCase";
+import { RefreshTokenUseCase } from "./application/useCases/RefreshToken/RefreshTokenUseCase";
+import { JwtTokenService } from "./infrastructure/services/jwt/JwtTokenService";
 
 async function bootstrap() {
   try {
@@ -18,9 +21,19 @@ async function bootstrap() {
 
     const accountRepository = new AccountRepositorySequelize();
     const cryptoService = new BcryptCryptographyService();
+    const tokenService = new JwtTokenService();
     const createAccountUseCase = new CreateAccountUseCase(
       accountRepository,
       cryptoService
+    );
+    const loginUseCase = new LoginUseCase(
+      accountRepository,
+      cryptoService,
+      tokenService
+    );
+    const refreshTokenUseCase = new RefreshTokenUseCase(
+      accountRepository,
+      tokenService
     );
 
     const app = express();
@@ -30,7 +43,11 @@ async function bootstrap() {
       res.json({ message: "Auth service running" });
     });
 
-    const authRouter = createAuthRouter(createAccountUseCase);
+    const authRouter = createAuthRouter(
+      createAccountUseCase,
+      loginUseCase,
+      refreshTokenUseCase
+    );
     app.use("/auth", authRouter);
 
     const PORT = process.env.PORT || 3000;
