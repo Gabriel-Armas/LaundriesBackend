@@ -23,6 +23,7 @@ services:
     depends_on:
       - db  #Espera a que la BD inicie
     ports:
+      - "4001:3000"
     environment: 
       # db es el nombre del servicio de arriba. 5432 es el puerto interno.
       DATABASE_URL: postgres://thomas:password123@db:5432/lavanderia_order_api
