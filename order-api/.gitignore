@@ -1,0 +1,10 @@
+**/node_modules/
+
+postgres_data/
+
+**/.env
+
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
