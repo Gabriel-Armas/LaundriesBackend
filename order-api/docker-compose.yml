@@ -1,1 +1,68 @@
-#Docker compose auxiliar para desarrollo
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: lavanderia_db
+    restart: always
+    environment:
+      POSTGRES_USER: thomas
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: lavanderia_order_api
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data  #En este volumen guardamos nuestros datos, está mapeado
+
+      #Agregamos lo relacionado a la API de servicios
+  servicios-api:
+    build: 
+      context: ./servicios-api  #Carpeta donde está el Dockerfile
+      dockerfile: Dockerfile
+    container_name: api_servicios
+    depends_on:
+      - db  #Espera a que la BD inicie
+    ports:
+    environment: 
+      # db es el nombre del servicio de arriba. 5432 es el puerto interno.
+      DATABASE_URL: postgres://thomas:password123@db:5432/lavanderia_order_api
+    volumes:
+      #Hot Reload
+      - ./servicios-api/app:/usr/src/app
+      - /usr/src/app/node_modules
+
+  #agregamos lo relacionado a la API de clientes
+  clientes-api:
+    build: 
+      context: ./clientes-api  #Carpeta donde está el Dockerfile
+      dockerfile: Dockerfile
+    container_name: api_clientes
+    depends_on:
+      - db  
+    ports:
+      - "4002:3000" 
+    environment:
+      DATABASE_URL: postgres://thomas:password123@db:5432/lavanderia_order_api
+    volumes:
+      
+      - ./clientes-api/app:/usr/src/app
+      - /usr/src/app/node_modules
+
+
+
+  #agregamos lo relacionado a la API de ordenes
+  ordenes-api:
+    build: 
+      context: ./ordenes-api  
+      dockerfile: Dockerfile
+    container_name: api_ordenes
+    depends_on:
+      - db  
+    ports:
+      - "4003:3000"
+    environment:
+    
+      DATABASE_URL: postgres://thomas:password123@db:5432/lavanderia_order_api
+    volumes:
+      - ./ordenes-api/app:/usr/src/app
+      - /usr/src/app/node_modules

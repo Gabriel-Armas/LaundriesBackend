@@ -1,1 +1,5 @@
-Aqui solo va el docker compose porque estas API compartiran base
+primero se debió haber hecho el comando: 
+
+docker-compose up --build 
+
+Luego de ello se deberían ver los logs correctos de la base de datos. 
