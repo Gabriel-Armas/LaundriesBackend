@@ -11,6 +11,7 @@ import { createAuthRouter } from "./interfaces/http/express/routes/authRoutes";
 import { LoginUseCase } from "./application/useCases/Login/LoginUseCase";
 import { RefreshTokenUseCase } from "./application/useCases/RefreshToken/RefreshTokenUseCase";
 import { JwtTokenService } from "./infrastructure/services/jwt/JwtTokenService";
+import { ChangeAccountRoleUseCase } from "./application/useCases/ChangeRole/ChangeAccountRoleUseCase";
 
 async function bootstrap() {
   try {
@@ -35,6 +36,9 @@ async function bootstrap() {
       accountRepository,
       tokenService
     );
+    const changeAccountRoleUseCase = new ChangeAccountRoleUseCase(
+      accountRepository
+    );
 
     const app = express();
     app.use(express.json());
@@ -46,7 +50,9 @@ async function bootstrap() {
     const authRouter = createAuthRouter(
       createAccountUseCase,
       loginUseCase,
-      refreshTokenUseCase
+      refreshTokenUseCase,
+      changeAccountRoleUseCase,
+      tokenService
     );
     app.use("/auth", authRouter);
 
