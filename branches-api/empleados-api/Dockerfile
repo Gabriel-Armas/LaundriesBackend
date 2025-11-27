@@ -1,1 +1,0 @@
-#Aqui va la imagen para la api con todo lo necesario para ejecutarla

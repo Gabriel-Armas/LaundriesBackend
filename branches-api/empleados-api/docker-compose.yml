@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  employees-db:
+    image: postgres:16
+    container_name: employees-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:${DB_INTERNAL_PORT}"
+    volumes:
+      - employees_db_data:/var/lib/postgresql/data
+
+volumes:
+  employees_db_data:

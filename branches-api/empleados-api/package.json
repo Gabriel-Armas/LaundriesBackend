@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@nestjs/axios": "^4.0.1",
+    "@nestjs/config": "^4.0.2",
+    "@prisma/client": "^6.19.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.0"
+  }
+}
