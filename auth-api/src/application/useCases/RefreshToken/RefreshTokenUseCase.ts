@@ -26,6 +26,10 @@ export class RefreshTokenUseCase {
       throw new Error("USER_NOT_FOUND");
     }
 
+    if (account.role === "DELETED") {
+      throw new Error("ACCOUNT_DELETED");
+    }
+
     const newPayload = {
       userId: account.id,
       email: account.email,

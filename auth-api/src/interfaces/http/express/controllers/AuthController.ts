@@ -2,12 +2,14 @@ import { Request, Response } from "express";
 import { CreateAccountUseCase } from "../../../../application/useCases/CreateAccount/CreateAccountUseCase";
 import { LoginUseCase } from "../../../../application/useCases/Login/LoginUseCase";
 import { RefreshTokenUseCase } from "../../../../application/useCases/RefreshToken/RefreshTokenUseCase";
+import { ChangeAccountRoleUseCase } from "../../../../application/useCases/ChangeRole/ChangeAccountRoleUseCase";
 
 export class AuthController {
   constructor(
     private readonly createAccountUseCase: CreateAccountUseCase,
     private readonly loginUseCase: LoginUseCase,
-    private readonly refreshTokenUseCase: RefreshTokenUseCase
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
+    private readonly changeAccountRoleUseCase: ChangeAccountRoleUseCase
   ) {}
 
   register = async (req: Request, res: Response) => {
@@ -90,6 +92,16 @@ export class AuthController {
         });
       }
 
+      if (error.message === "ACCOUNT_DELETED") {
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: "ACCOUNT_DELETED",
+            message: "La cuenta está eliminada y no puede iniciar sesión",
+          },
+        });
+      }
+
       return res.status(500).json({
         success: false,
         error: {
@@ -139,6 +151,83 @@ export class AuthController {
           error: {
             code: "USER_NOT_FOUND",
             message: "User not found",
+          },
+        });
+      }
+
+      if (error.message === "ACCOUNT_DELETED") {
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: "ACCOUNT_DELETED",
+            message: "La cuenta está eliminada y no puede iniciar sesión",
+          },
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: "INTERNAL_ERROR",
+          message: "Internal server error",
+        },
+      });
+    }
+  };
+
+  changeRole = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { role } = req.body;
+
+      const result = await this.changeAccountRoleUseCase.execute({
+        accountId: id,
+        newRole: role,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error: any) {
+      console.error("Error in changeRole:", error);
+
+      if (error.message === "INVALID_INPUT") {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: "INVALID_INPUT",
+            message: "Account id and role are required",
+          },
+        });
+      }
+
+      if (error.message === "INVALID_ROLE") {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: "INVALID_ROLE",
+            message: "Provided role is not allowed",
+          },
+        });
+      }
+
+      if (error.message === "ACCOUNT_NOT_FOUND") {
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: "ACCOUNT_NOT_FOUND",
+            message: "Account not found",
+          },
+        });
+      }
+
+      if (error.message === "ACCOUNT_DELETED") {
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: "ACCOUNT_DELETED",
+            message: "La cuenta está eliminada y no puede cambiarse el rol",
           },
         });
       }
