@@ -2,7 +2,7 @@ import { IAccountRepository } from "../../ports/repositories/IAccountRepository"
 import { ChangeAccountRoleRequest } from "./ChangeAccountRoleRequest";
 import { ChangeAccountRoleResponse } from "./ChangeAccountRoleResponse";
 
-const ALLOWED_ROLES = ["ADMIN", "EMPLOY", "DELETED"];
+const ALLOWED_ROLES = ["EMPLOYEE", "DELETED", "MANAGER"];
 
 export class ChangeAccountRoleUseCase {
   constructor(private readonly accountRepository: IAccountRepository) {}
