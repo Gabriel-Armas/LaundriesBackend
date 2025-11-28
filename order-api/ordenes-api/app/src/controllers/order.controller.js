@@ -44,7 +44,7 @@ const updateOrderStatus = async (req, res) => {
 };
 
 
-const getActiveSells = async (req,res) => {
+const getActiveSales = async (req,res) => {
     try{
 
         const {idSucursal,idCliente}= req.query;
@@ -53,7 +53,7 @@ const getActiveSells = async (req,res) => {
             return res.status(400).json({ message: 'Falta el idSucursal' });
     }
 
-        const ventas = await orderService.getActiveSells(idSucursal,idCliente);
+        const ventas = await orderService.getActiveSalesByClient(idSucursal,idCliente);
 
 
 
@@ -112,7 +112,7 @@ const getAllOrders = async (req, res) => {
 };
 module.exports = {
     createOrder,
-    getActiveSells,
+    getActiveSales,
     updateOrderStatus,
     getSaleDetails,
     getAllSales,

@@ -79,7 +79,7 @@ const createOrderTransaction = async (orderData) => {
     }
     };
 
-const getActiveSellsByClient = async (idSucursal, idCliente) => {
+const getActiveSalesByClient = async (idSucursal, idCliente) => {
     //filtro dinámico
     const ventaFilter = {
         id_sucursal: idSucursal, //filtramos por sucursal 
@@ -161,6 +161,9 @@ const updateOrderStatus = async (idOrden, nuevoEstado) => {
     return orden;
 };
 
+
+//Esta el metodo de eliminar ordenes faltante por impementar, tambien los middlewares y requisito de roles
+
 //Obtener TODAS las ventas de una sucursal, Historial
 const getAllSalesByBranch = async (idSucursal) => {
     const ventas = await Venta.findAll({
@@ -195,10 +198,10 @@ const getAllOrdersByBranch = async (idSucursal) => {
 };
         
     module.exports = {
-    createOrderTransaction,
-    getActiveSellsByClient,
-    updateOrderStatus,
-    getSaleDetails,
+    createOrderTransaction, //ya
+    getActiveSalesByClient, //ya
+    updateOrderStatus, //ya
+    getSaleDetails, //ya
     getAllSalesByBranch, 
     getAllOrdersByBranch
 };
