@@ -1,4 +1,5 @@
 const { sequelize, Venta, OrdenServicio } = require('../models');
+const { Op } = require('sequelize');
 
 //Esta función NO recibe req ni res, recibe datos puros.
 
@@ -78,6 +79,129 @@ const createOrderTransaction = async (orderData) => {
     }
     };
 
+const getActiveSalesByClient = async (idSucursal, idCliente) => {
+    //filtro dinámico
+    const ventaFilter = {
+        id_sucursal: idSucursal, //filtramos por sucursal 
+    };
+
+    //Si el empleado seleccionó un cliente específico, agregamos ese filtro
+    if (idCliente) {
+        ventaFilter.id_cliente = idCliente;
+    }
+
+//Hacemos la consulta inteligente
+const ventasActivas = await Venta.findAll({
+    where: ventaFilter,
+    include: [{
+    model: OrdenServicio,
+    as: 'items',
+    required: true, // Esto hace un inner jpin, si no hay items activos, no trae la venta
+    where: {
+        //Solo nos interesan estos estados
+        estado: {
+        [Op.in]: ['RECIBIDO', 'LAVANDO', 'LISTO'] 
+        }
+    }
+    }],
+    order: [['fecha_recepcion', 'DESC']] //Las mas recientes primero
+});
+
+return ventasActivas;
+};
+
+
+//Obtenemos TODAS las ORDENES ASOCIADAS A UNA VENTA
+const getSaleDetails = async (idVenta) => {
+    const venta = await Venta.findByPk(idVenta, {
+        include: [{
+        model: OrdenServicio,
+        as: 'items',
+        //Queremos ver items entregados, cancelados, lavando... todo.
+        }]
+    });
+
+    if (!venta) {
+        throw new Error('Venta no encontrada');
+    }
+
+    return venta;
+    };
+
+
+    //const getOrdersAllOrdersBySell or getAllActiveOrdersBySell?  
+
+const updateOrderStatus = async (idOrden, nuevoEstado) => {
+    const estadosValidos = ['RECIBIDO', 'LAVANDO', 'LISTO', 'ENTREGADO', 'CANCELADO'];
+    
+    if (!estadosValidos.includes(nuevoEstado)) {
+        throw new Error(`Estado '${nuevoEstado}' no es válido`);
+    }
+
+    //Buscamos la orden
+    const orden = await OrdenServicio.findByPk(idOrden);
+    if (!orden) {
+        throw new Error('Orden no encontrada');
+    }
+
+    //verificamos si ya está en un estado final para que no deje cambiarlo
+    const estadosTerminales = ['ENTREGADO', 'CANCELADO'];
+    
+    if (estadosTerminales.includes(orden.estado)) {
+        throw new Error(`No se puede modificar una orden que ya está ${orden.estado}.`);
+    }
+
+    //Actualizamos
+    orden.estado = nuevoEstado;
+    
+    //Si el nuevo estado es ENTREGADO, podría guardar la fecha
+    
+
+    await orden.save();
+    return orden;
+};
+
+
+//Esta el metodo de eliminar ordenes faltante por impementar, tambien los middlewares y requisito de roles
+
+//Obtener TODAS las ventas de una sucursal, Historial
+const getAllSalesByBranch = async (idSucursal) => {
+    const ventas = await Venta.findAll({
+        where: {
+        id_sucursal: idSucursal
+        },
+        include: [{
+        model: OrdenServicio,
+        as: 'items'
+        }],
+        order: [['fecha_recepcion', 'DESC']] //De la más reciente a la más antigua
+    });
+    
+    return ventas;
+};
+
+//Obtener TODAS las órdenes individuales de una sucursal
+const getAllOrdersByBranch = async (idSucursal) => {
+    //OrdenServicio no tiene columna id_sucursal, tenemos que unirla con Venta y filtrar por la sucursal de la venta.
+    
+    const ordenes = await OrdenServicio.findAll({
+        include: [{
+        model: Venta,
+        as: 'venta',
+        where: { id_sucursal: idSucursal }, //Solo ventas de esta sucursal
+        required: true // Inner join necesario
+        }],
+        order: [['id', 'DESC']]
+    });
+
+    return ordenes;
+};
+        
     module.exports = {
-    createOrderTransaction
+    createOrderTransaction, //ya
+    getActiveSalesByClient, //ya
+    updateOrderStatus, //ya
+    getSaleDetails, //ya
+    getAllSalesByBranch, 
+    getAllOrdersByBranch
 };
