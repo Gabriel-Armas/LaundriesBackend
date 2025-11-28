@@ -1,4 +1,3 @@
-// src/core/employees/use-cases/edit-gerente.usecase.ts
 import { EmpleadoRepository } from '../domain/empleado.repository';
 import { AuthPort } from '../domain/auth.port';
 import { EditEmpleadoInput } from './edit-empleado.usecase';
@@ -10,9 +9,13 @@ export class EditGerenteUseCase {
   ) {}
 
   async execute(input: EditEmpleadoInput) {
+    if (input.currentUser.role !== 'ADMIN') {
+      throw new Error('Solo ADMIN puede editar gerentes');
+    }
+
     const user = await this.authPort.getUserById(input.idEmpleado);
-    if (!user || user.role !== 'GERENTE') {
-      throw new Error('Solo se pueden editar gerentes en esta ruta');
+    if (!user || user.role !== 'MANAGER') {
+      throw new Error('Solo se pueden editar gerentes (MANAGER) en esta ruta');
     }
 
     const empleado = await this.empleadoRepo.findById(input.idEmpleado);

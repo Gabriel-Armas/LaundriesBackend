@@ -1,7 +1,7 @@
-export type AuthRole = 'EMPLEADO' | 'GERENTE' | 'ELIMINADO';
+export type AuthRole = 'ADMIN' | 'MANAGER' | 'DELETED';
 
 export interface AuthUser {
-  id: string;    
+  id: string;
   email: string;
   role: AuthRole;
 }

@@ -10,10 +10,14 @@ export class CreateGerenteUseCase {
   ) {}
 
   async execute(input: CreateEmpleadoInput): Promise<Empleado> {
+    if (input.currentUser.role !== 'ADMIN') {
+      throw new Error('Solo ADMIN puede crear gerentes');
+    }
+
     const authUser = await this.authPort.createUser({
       email: input.email,
       password: input.password,
-      role: 'GERENTE',
+      role: 'MANAGER', 
     });
 
     const empleado = new Empleado({

@@ -1,12 +1,14 @@
 import { EmpleadoRepository } from '../domain/empleado.repository';
 import { AuthPort, AuthRole } from '../domain/auth.port';
 import { EmpleadoBaseInput } from './dtos';
+import { JwtPayload } from '../../../infrastructure/auth/jwt-payload.type';
 
 export interface EditEmpleadoInput extends EmpleadoBaseInput {
   idEmpleado: string;
   email?: string;
   password?: string;
   role?: AuthRole;
+  currentUser: JwtPayload;
 }
 
 export class EditEmpleadoUseCase {
@@ -16,8 +18,16 @@ export class EditEmpleadoUseCase {
   ) {}
 
   async execute(input: EditEmpleadoInput) {
+    if (input.currentUser.role !== 'MANAGER' && input.currentUser.role !== 'ADMIN') {
+      throw new Error('No tienes permisos para editar empleados');
+    }
+
     const empleado = await this.empleadoRepo.findById(input.idEmpleado);
     if (!empleado) throw new Error('Empleado no encontrado');
+
+    if (input.role && input.currentUser.role !== 'ADMIN') {
+      throw new Error('Solo ADMIN puede cambiar el rol de un empleado');
+    }
 
     if (input.email || input.password || input.role) {
       await this.authPort.updateUser({

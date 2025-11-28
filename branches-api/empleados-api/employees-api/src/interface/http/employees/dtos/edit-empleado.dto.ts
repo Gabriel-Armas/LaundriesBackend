@@ -4,8 +4,8 @@ export class EditEmpleadoDto {
     telefono?: string;
     dni?: string;
     fechaNacimiento?: string;
-    idSucursal?: number;  
+    idSucursal?: number;
     email?: string;
     password?: string;
-    role?: 'EMPLEADO' | 'GERENTE' | 'ELIMINADO';
+    role?: 'ADMIN' | 'MANAGER' | 'DELETED';
   }
