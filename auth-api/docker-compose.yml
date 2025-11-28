@@ -1,1 +1,46 @@
-#Docker compose auxiliar para desarrollo
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: auth_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: laundries_auth
+      POSTGRES_USER: laundries_auth_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    networks:
+      - auth_net
+
+  auth-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth_api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      NODE_ENV: production
+      PORT: 5500
+      DATABASE_URL: ${DATABASE_URL}
+
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN}
+
+      JWT_ISSUER: laundries-auth-service
+      JWT_AUDIENCE: laundries-apis
+    ports:
+      - "5500:5500"
+    networks:
+      - auth_net
+
+networks:
+  auth_net:
+
+volumes:
+  postgres_auth_data:

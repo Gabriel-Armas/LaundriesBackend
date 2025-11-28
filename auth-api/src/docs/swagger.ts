@@ -14,7 +14,18 @@ const options: any = {
         url: "http://localhost:5500",
       },
     ],
+
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
   },
+
   apis: [path.join(__dirname, "../interfaces/http/express/routes/*.ts")],
 };
 

@@ -23,6 +23,10 @@ export class LoginUseCase {
       throw new Error("INVALID_CREDENTIALS");
     }
 
+    if (account.role === "DELETED") {
+      throw new Error("ACCOUNT_DELETED");
+    }
+
     const isValid = await this.cryptographyService.comparePassword(
       password,
       account.password
