@@ -2,12 +2,15 @@ const express = require('express');
 const cors = require('cors');
 //Importamos sequelize para conectar y Servicio para consultar datos
 const { sequelize, Servicio } = require('./src/models'); 
+const serviceRoutes = require('./src/routes/service.routes') 
 
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/servicios',serviceRoutes);
 
 //Endpoint de prueba 
 app.get('/', (req, res) => res.json({ message: 'API Servicios funcionando' }));
