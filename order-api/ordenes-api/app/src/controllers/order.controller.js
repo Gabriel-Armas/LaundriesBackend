@@ -110,13 +110,67 @@ const getAllOrders = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+
+
+//Historial Tickets, tambien muestra todas las ordenes asociadas al cliente, o sea tooodo junto
+const getAllSalesByClient = async (req, res) => {
+    try {
+        const { idCliente } = req.params;
+        const ventas = await orderService.getAllSalesByClient(idCliente);
+        return res.status(200).json(ventas);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+//Historial Prendas
+const getAllOrdersByClient = async (req, res) => {
+    try {
+        const { idCliente } = req.params;
+        const ordenes = await orderService.getAllOrdersByClient(idCliente);
+        return res.status(200).json(ordenes);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+// PATCH cancelar una orden, es cambiarle el estado
+const cancelOrder = async (req, res) => {
+    try {
+        const { id } = req.params; // ID de la orden a cancelar
+        const { idSucursal, codigoAutorizacion } = req.body; // Datos de seguridad
+
+        if (!idSucursal || !codigoAutorizacion) {
+            return res.status(400).json({ 
+                message: 'Se requiere idSucursal y codigoAutorizacion para cancelar' 
+            });
+        }
+
+        const ordenCancelada = await orderService.cancelOrder(id, idSucursal, codigoAutorizacion);
+
+        return res.status(200).json({
+            message: 'Orden cancelada exitosamente',
+            data: ordenCancelada
+        });
+
+    } catch (error) {
+        // Si el error es por código inválido, podríamos devolver 403 (Forbidden) o 400
+        return res.status(400).json({ 
+            message: 'No se pudo cancelar la orden',
+            error: error.message 
+        });
+    }
+};
+
 module.exports = {
     createOrder,
     getActiveSales,
     updateOrderStatus,
     getSaleDetails,
     getAllSales,
-    getAllOrders
-
-
+    getAllOrders,
+    // --- NUEVOS ---
+    getAllSalesByClient,
+    getAllOrdersByClient,
+    cancelOrder
 };

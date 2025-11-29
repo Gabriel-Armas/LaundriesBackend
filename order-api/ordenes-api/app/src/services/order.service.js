@@ -196,12 +196,85 @@ const getAllOrdersByBranch = async (idSucursal) => {
 
     return ordenes;
 };
+
+
+const getAllSalesByClient = async (id) => {
+    const sales = await Venta.findAll({
+        where:{
+            id_cliente:id
+        },
+        include:[{
+            model:OrdenServicio,
+            as: 'items'
+        }],
+        order:[['fecha_recepcion','DESC']]
+    });
+
+    return sales;
+
+}
+
+const getAllOrdersByClient = async (id) => {
+    const orders = await OrdenServicio.findAll({
+        include:[{
+            model: Venta,
+            as: 'venta',
+            where:{id_cliente:id},
+            required: true,
+            attributes:['codigo_recogida','fecha_recepcion']
+        }],
+        order:[['id','DESC']]
+    });
+
+    return orders; 
+}
+
+
+//tengo que ajustarla de acuerdo a lo que me mande gabo
+const validarCodigoSucursal = async (idSucursal, codigoIngresado) => {
+    
+    return codigoIngresado === "1234"; 
+};
+
+
+//cancelamos una orden con la validcion de la sucursa, se supone que ella tendrá un code
+const cancelOrder = async (idOrden, idSucursal, codigoAutorizacion) => {
+    //validamos si la orden existe
+    const orden = await OrdenServicio.findByPk(idOrden);
+    if (!orden) {
+        throw new Error('La orden no existe');
+    }
+
+    //validamos que no este ya entregada o cancelada
+    const estadosTerminales = ['ENTREGADO', 'CANCELADO'];
+    if (estadosTerminales.includes(orden.estado)) {
+        throw new Error(`No se puede cancelar una orden que ya está en estado ${orden.estado}`);
+    }
+
+    //verificamos con el code de seguridad
+    const codigoEsValido = await validarCodigoSucursal(idSucursal, codigoAutorizacion);
+    
+    if (!codigoEsValido) {
+        throw new Error('Código de autorización de sucursal inválido');
+    }
+
+    //cancelamos
+    orden.estado = 'CANCELADO';
+    await orden.save();
+
+    return orden;
+};
         
     module.exports = {
     createOrderTransaction, //ya
     getActiveSalesByClient, //ya
     updateOrderStatus, //ya
     getSaleDetails, //ya
-    getAllSalesByBranch, 
-    getAllOrdersByBranch
+    getAllSalesByBranch, //ya
+    getAllOrdersByBranch,//ya
+    getAllSalesByClient,//ya
+    getAllOrdersByClient,//ya
+    cancelOrder//ya
+
+
 };
