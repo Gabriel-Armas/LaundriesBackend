@@ -1,12 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const { sequelize } = require('./src/models'); //Importamos para sincronizar
+const clientRoutes = require('./src/routes/client.routes')
 
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/clientes', clientRoutes)
 
 app.get('/', (req, res) => res.json({ message: 'API Clientes funcionando ' }));
 
