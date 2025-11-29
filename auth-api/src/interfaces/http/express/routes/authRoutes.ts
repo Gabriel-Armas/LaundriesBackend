@@ -5,7 +5,7 @@ import { LoginUseCase } from "../../../../application/useCases/Login/LoginUseCas
 import { RefreshTokenUseCase } from "../../../../application/useCases/RefreshToken/RefreshTokenUseCase";
 import { ChangeAccountRoleUseCase } from "../../../../application/useCases/ChangeRole/ChangeAccountRoleUseCase";
 import { JwtTokenService } from "../../../../infrastructure/services/jwt/JwtTokenService";
-import { requireAdmin } from "../middelware/authMiddleware";
+import { requireAuth } from "../middelware/authMiddleware";
 
 export function createAuthRouter(
   createAccountUseCase: CreateAccountUseCase,
@@ -53,7 +53,7 @@ export function createAuthRouter(
    *       409:
    *         description: Email ya registrado
    */
-  router.post("/register", controller.register);
+  router.post("/register", requireAuth(tokenService), controller.register);
 
   /**
    * @swagger
@@ -196,7 +196,7 @@ export function createAuthRouter(
    *       500:
    *         description: Error interno del servidor
    */
-  router.patch("/:id/role", requireAdmin(tokenService), controller.changeRole);
+  router.patch("/:id/role", requireAuth(tokenService), controller.changeRole);
 
   return router;
 }

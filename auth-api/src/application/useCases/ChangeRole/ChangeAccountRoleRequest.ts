@@ -1,4 +1,7 @@
+import { Role } from "../../../interfaces/http/express/middelware/authMiddleware";
+
 export interface ChangeAccountRoleRequest {
   accountId: string;
-  newRole: string;
+  newRole: "DELETED";
+  actorRole: Role;
 }

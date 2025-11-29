@@ -3,6 +3,7 @@ import { CreateAccountUseCase } from "../../../../application/useCases/CreateAcc
 import { LoginUseCase } from "../../../../application/useCases/Login/LoginUseCase";
 import { RefreshTokenUseCase } from "../../../../application/useCases/RefreshToken/RefreshTokenUseCase";
 import { ChangeAccountRoleUseCase } from "../../../../application/useCases/ChangeRole/ChangeAccountRoleUseCase";
+import { AuthRequest } from "../middelware/authMiddleware";
 
 export class AuthController {
   constructor(
@@ -12,14 +13,25 @@ export class AuthController {
     private readonly changeAccountRoleUseCase: ChangeAccountRoleUseCase
   ) {}
 
-  register = async (req: Request, res: Response) => {
+  register = async (req: AuthRequest, res: Response) => {
     try {
       const { email, password, role } = req.body;
+
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Missing authenticated user",
+          },
+        });
+      }
 
       const result = await this.createAccountUseCase.execute({
         email,
         password,
         role,
+        actorRole: req.user.role,
       });
 
       return res.status(201).json({
@@ -34,7 +46,37 @@ export class AuthController {
           success: false,
           error: {
             code: "INVALID_INPUT",
-            message: "Email and password are required",
+            message: "Email, password, role and actorRole are required",
+          },
+        });
+      }
+
+      if (error.message === "FORBIDDEN_CREATE_ADMIN") {
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: "FORBIDDEN_CREATE_ADMIN",
+            message: "ADMIN accounts cannot be created",
+          },
+        });
+      }
+
+      if (error.message === "REQUIRES_MANAGER_TO_CREATE_EMPLOYEE") {
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: "REQUIRES_MANAGER_TO_CREATE_EMPLOYEE",
+            message: "Only MANAGER can create EMPLOYEE accounts",
+          },
+        });
+      }
+
+      if (error.message === "REQUIRES_EMPLOYEE_TO_CREATE_MANAGER") {
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: "REQUIRES_EMPLOYEE_TO_CREATE_MANAGER",
+            message: "Only EMPLOYEE can create MANAGER accounts",
           },
         });
       }
@@ -175,14 +217,25 @@ export class AuthController {
     }
   };
 
-  changeRole = async (req: Request, res: Response) => {
+  changeRole = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { role } = req.body;
 
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Missing authenticated user",
+          },
+        });
+      }
+
       const result = await this.changeAccountRoleUseCase.execute({
         accountId: id,
         newRole: role,
+        actorRole: req.user.role,
       });
 
       return res.status(200).json({
@@ -197,17 +250,17 @@ export class AuthController {
           success: false,
           error: {
             code: "INVALID_INPUT",
-            message: "Account id and role are required",
+            message: "Account id, role and actorRole are required",
           },
         });
       }
 
-      if (error.message === "INVALID_ROLE") {
+      if (error.message === "FORBIDDEN_ROLE_CHANGE") {
         return res.status(400).json({
           success: false,
           error: {
-            code: "INVALID_ROLE",
-            message: "Provided role is not allowed",
+            code: "FORBIDDEN_ROLE_CHANGE",
+            message: "Only change to DELETED is allowed",
           },
         });
       }
@@ -222,12 +275,25 @@ export class AuthController {
         });
       }
 
-      if (error.message === "ACCOUNT_DELETED") {
+      if (
+        error.message === "FORBIDDEN_ACTOR_ROLE" ||
+        error.message === "FORBIDDEN_TARGET_ROLE"
+      ) {
         return res.status(403).json({
           success: false,
           error: {
-            code: "ACCOUNT_DELETED",
-            message: "La cuenta está eliminada y no puede cambiarse el rol",
+            code: error.message,
+            message: "You are not allowed to change this account role",
+          },
+        });
+      }
+
+      if (error.message === "ACCOUNT_ALREADY_DELETED") {
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: "ACCOUNT_ALREADY_DELETED",
+            message: "Account is already DELETED and cannot be modified",
           },
         });
       }

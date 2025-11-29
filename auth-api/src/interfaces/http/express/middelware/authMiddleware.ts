@@ -1,15 +1,19 @@
 import { Request, Response, NextFunction } from "express";
 import { JwtTokenService } from "../../../../infrastructure/services/jwt/JwtTokenService";
 
-export interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    email: string;
-    role: string;
-  };
+export type Role = "ADMIN" | "MANAGER" | "EMPLOYEE" | "DELETED";
+
+export interface AuthUser {
+  userId: string;
+  email: string;
+  role: Role;
 }
 
-export function requireAdmin(tokenService: JwtTokenService) {
+export interface AuthRequest extends Request {
+  user?: AuthUser;
+}
+
+export function requireAuth(tokenService: JwtTokenService) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const authHeader = req.headers["authorization"];
@@ -38,12 +42,13 @@ export function requireAdmin(tokenService: JwtTokenService) {
         });
       }
 
-      if (payload.role !== "ADMIN") {
-        return res.status(403).json({
+      const allowedRoles: Role[] = ["ADMIN", "MANAGER", "EMPLOYEE", "DELETED"];
+      if (!allowedRoles.includes(payload.role as Role)) {
+        return res.status(401).json({
           success: false,
           error: {
-            code: "FORBIDDEN",
-            message: "Only ADMIN users can change roles",
+            code: "INVALID_ROLE",
+            message: "Role in token is not allowed",
           },
         });
       }
@@ -51,12 +56,12 @@ export function requireAdmin(tokenService: JwtTokenService) {
       req.user = {
         userId: payload.userId,
         email: payload.email,
-        role: payload.role,
+        role: payload.role as Role,
       };
 
       next();
     } catch (error) {
-      console.error("Error in requireAdmin middleware:", error);
+      console.error("Error in requireAuth middleware:", error);
       return res.status(401).json({
         success: false,
         error: {
