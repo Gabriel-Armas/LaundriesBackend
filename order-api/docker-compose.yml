@@ -6,36 +6,37 @@ services:
     container_name: lavanderia_db
     restart: always
     environment:
-      POSTGRES_USER: thomas
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: lavanderia_order_api
+      # VARIABLES TRAÍDAS DEL ARCHIVO .env PRINCIPAL
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5433:5432"
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data  #En este volumen guardamos nuestros datos, está mapeado
+      - ./postgres_data:/var/lib/postgresql/data
 
-      #Agregamos lo relacionado a la API de servicios
   servicios-api:
     build: 
-      context: ./servicios-api  #Carpeta donde está el Dockerfile
+      context: ./servicios-api
       dockerfile: Dockerfile
     container_name: api_servicios
     depends_on:
-      - db  #Espera a que la BD inicie
+      - db
     ports:
       - "4001:3000"
     environment: 
-      # db es el nombre del servicio de arriba. 5432 es el puerto interno.
-      DATABASE_URL: postgres://thomas:password123@db:5432/lavanderia_order_api
+      # Generamos la URL de conexión dentro del contenedor usando las variables de ENV
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      # Inyectamos el Secreto de Seguridad
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET} 
     volumes:
-      #Hot Reload
+      # Hot Reload y mapeo de código
       - ./servicios-api/app:/usr/src/app
       - /usr/src/app/node_modules
 
-  #agregamos lo relacionado a la API de clientes
   clientes-api:
     build: 
-      context: ./clientes-api  #Carpeta donde está el Dockerfile
+      context: ./clientes-api
       dockerfile: Dockerfile
     container_name: api_clientes
     depends_on:
@@ -43,15 +44,12 @@ services:
     ports:
       - "4002:3000" 
     environment:
-      DATABASE_URL: postgres://thomas:password123@db:5432/lavanderia_order_api
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
     volumes:
-      
       - ./clientes-api/app:/usr/src/app
       - /usr/src/app/node_modules
 
-
-
-  #agregamos lo relacionado a la API de ordenes
   ordenes-api:
     build: 
       context: ./ordenes-api  
@@ -62,8 +60,8 @@ services:
     ports:
       - "4003:3000"
     environment:
-    
-      DATABASE_URL: postgres://thomas:password123@db:5432/lavanderia_order_api
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
     volumes:
       - ./ordenes-api/app:/usr/src/app
       - /usr/src/app/node_modules
