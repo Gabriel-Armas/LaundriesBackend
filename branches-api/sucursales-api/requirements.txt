@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+SQLAlchemy>=2.0
+psycopg2-binary
+python-jose[cryptography]
+python-multipart
+requests
+python-dotenv
+starlette
