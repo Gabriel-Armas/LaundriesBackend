@@ -6,7 +6,7 @@ import { AuthPort, AuthRole, AuthUser } from '../../core/employees/domain/auth.p
 export class AuthHttpAdapter implements AuthPort {
   constructor(private readonly http: HttpService) {}
 
-  private baseUrl = process.env.AUTH_API_URL || 'http://auth-api:3000';
+  private baseUrl = process.env.AUTH_API_URL || 'http://host.docker.internal:4000';
 
   async createUser(input: {
     email: string;

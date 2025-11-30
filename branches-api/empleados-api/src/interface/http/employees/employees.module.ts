@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
+import { JwtModule } from '@nestjs/jwt';
+
 import { EmployeesController } from './employees.controller';
 
 import { PrismaService } from '../../../infrastructure/persistence/prisma.service';
@@ -12,13 +14,22 @@ import { EditEmpleadoUseCase } from '../../../core/employees/use-cases/edit-empl
 import { EditGerenteUseCase } from '../../../core/employees/use-cases/edit-gerente.usecase';
 import { GetEmpleadoGeneralUseCase } from '../../../core/employees/use-cases/get-empleado-general.usecase';
 
+import { JwtAuthGuard } from '../../../infrastructure/auth/jwt-auth.guard';
+
 @Module({
-  imports: [HttpModule],
+  imports: [
+    HttpModule,
+    JwtModule.register({
+      secret: process.env.JWT_ACCESS_SECRET,
+      signOptions: { algorithm: 'HS256' },
+    }),
+  ],
   controllers: [EmployeesController],
   providers: [
     PrismaService,
     EmpleadoPrismaRepository,
     AuthHttpAdapter,
+    JwtAuthGuard,
 
     {
       provide: CreateEmpleadoUseCase,

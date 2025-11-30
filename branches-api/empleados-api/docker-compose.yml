@@ -14,5 +14,20 @@ services:
     volumes:
       - employees_db_data:/var/lib/postgresql/data
 
+  employees-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: employees-api
+    restart: always
+    depends_on:
+      - employees-db
+    environment:
+      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@employees-db:${DB_INTERNAL_PORT}/${DB_NAME}?schema=public"
+      AUTH_API_URL: ${AUTH_API_URL}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+    ports:
+      - "3000:3000"
+
 volumes:
   employees_db_data:
