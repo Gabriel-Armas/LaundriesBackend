@@ -26,7 +26,7 @@ const options: any = {
     },
   },
 
-  apis: [path.join(__dirname, "../interfaces/http/express/routes/*.ts")],
+  apis: [path.join(__dirname, "../interfaces/http/express/routes/*.js")],
 };
 
 export const swaggerSpec = swaggerJSDoc(options);
