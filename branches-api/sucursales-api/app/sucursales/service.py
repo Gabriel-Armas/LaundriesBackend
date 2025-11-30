@@ -1,5 +1,5 @@
 import secrets
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -85,12 +85,6 @@ class SucursalService:
         user: CurrentUser,
         raw_token: str,
     ) -> ValidarClaveResponse:
-        """
-        Valida si la clave de cancelación recibida coincide con la de la sucursal.
-        Reglas:
-          - ADMIN: puede validar para cualquier sucursal.
-          - MANAGER: sólo si pertenece a esa sucursal (empleados-api).
-        """
         if user.role not in ("ADMIN", "MANAGER"):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado")
 
