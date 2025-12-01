@@ -1,0 +1,35 @@
+# Entornos virtuales
+venv/
+.env/
+.venv/
+env/
+
+# Archivos de entorno
+.env
+.env.*  # por si tienes .env.local, etc.
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Logs
+*.log
+
+# Coverage / tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs / editor
+.vscode/
+.idea/
+*.swp
+
+# macOS
+.DS_Store
+
+# Docker
+docker-data/

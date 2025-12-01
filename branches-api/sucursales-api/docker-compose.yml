@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: sucursales_db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5434:5432"   
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sucursales_net
+
+  sucursales-api:
+    build: .
+    container_name: sucursales_api
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      EMPLEADOS_API_BASE_URL: ${EMPLEADOS_API_BASE_URL}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-*}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      FORCE_HTTPS: ${FORCE_HTTPS:-0}
+    ports:
+      - "8881:8881"
+    networks:
+      - sucursales_net
+
+volumes:
+  postgres_data:
+
+networks:
+  sucursales_net:
