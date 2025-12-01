@@ -16,6 +16,11 @@ router.get('/ventas-activas',verifyToken, checkRole(['EMPLOYEE','MANAGER','ADMIN
 //http://localhost:4003/ordenes/ventas?idSucursal=...
 router.get('/ventas',verifyToken, checkRole(['MANAGER','ADMIN']), orderController.getAllSales);
 
+//Reporte de Ventas por fecha en formato  
+//http://localhost:4003/ordenes/ventas/por-fecha?idSucursal=XYZ&fecha=2025-11-30
+router.get('/ventas/por-fecha', verifyToken, checkRole(['MANAGER', 'ADMIN']), orderController.getSalesByDate);
+
+
 //Obtener TODAS las órdenes, items, de la sucursal
 //http://localhost:4003/ordenes/items?idSucursal=...
 router.get('/items',verifyToken, checkRole(['MANAGER','ADMIN']), orderController.getAllOrders);
@@ -40,6 +45,7 @@ router.get('/cliente/:idCliente/items',verifyToken, checkRole(['MANAGER','ADMIN'
 // Cancelar una orden, necesita que mandemos un code en el body
 //http://localhost:4003/ordenes/item/5/cancelar
 router.patch('/item/:id/cancelar', verifyToken , checkRole(['MANAGER','ADMIN']),orderController.cancelOrder);
+
 
 
 
