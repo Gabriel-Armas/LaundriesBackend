@@ -58,15 +58,26 @@ class SucursalService:
         sucursal_id: int,
         user: CurrentUser,
         raw_token: str,
-    ) -> ClaveDevolucionOut:
+    ):
         if user.role != "MANAGER":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No autorizado",
+            )
 
-        sucursal: Optional[SucursalModel] = self.repo.get_by_id(sucursal_id)
+        sucursal = self.repo.get_by_id(sucursal_id)
         if not sucursal or not sucursal.estado:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sucursal no encontrada")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Sucursal no encontrada",
+            )
 
-        es_manager_de_sucursal = is_manager_of_sucursal(user.user_id, sucursal_id, raw_token)
+        es_manager_de_sucursal = is_manager_of_sucursal(
+            user.user_id,
+            sucursal_id,
+            raw_token,
+        )
+
         if not es_manager_de_sucursal:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from typing import List
 from app.infrastructure.db import get_db
 from app.auth.dependencies import get_current_user, CurrentUser
-from app.sucursales.schemas import SucursalCreate, SucursalEdit, SucursalOut, ClaveDevolucionOut
+from app.sucursales.schemas import SucursalCreate, SucursalEdit, SucursalOut, ClaveDevolucionOut, ValidarClaveRequest, ValidarClaveResponse
 from app.sucursales.service import SucursalService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -62,13 +62,13 @@ def list_sucursales(
     service = SucursalService(db)
     return service.list_sucursales(current_user)
 
-
-@router.put("/{sucursal_id}", response_model=SucursalOut)
-def edit_sucursal(
+@router.post("/{sucursal_id}/validar-clave", response_model=ValidarClaveResponse)
+def validar_clave_cancelacion(
     sucursal_id: int,
-    dto: SucursalEdit,
+    dto: ValidarClaveRequest,
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(get_current_user),
+    raw_token: str = Depends(oauth2_scheme),
 ):
     service = SucursalService(db)
-    return service.edit_sucursal(sucursal_id, dto, current_user)
+    return service.validar_clave_cancelacion(sucursal_id, dto, current_user, raw_token)
