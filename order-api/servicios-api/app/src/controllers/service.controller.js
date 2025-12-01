@@ -86,5 +86,5 @@ module.exports={
     createService,
     editService,
     deleteService, 
-    getAllSercives
+    getAllServices
 } 
