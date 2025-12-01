@@ -58,20 +58,28 @@ const editService = async (id,data) => {
 
 
 const deleteService = async (id) => {
+    try {
+        const servicioEncontrado = await Servicio.findByPk(id);
+        if (!servicioEncontrado) throw new Error('Servicio no encontrado');
 
-    try{
-        const servicioEncontrado= await Servicio.findByPk(id);
+        //lo desactivamos:
+        servicioEncontrado.activo = false;
+        await servicioEncontrado.save();
 
-        if (!servicioEncontrado) {
-            throw new Error('Servicio no encontrado')
-            
-        }
-        await servicioEncontrado.destroy();
-
-        return {message:"Servicio eliminado correctamente"}
+        return { message: "Servicio desactivado correctamente (Soft Delete)" }
+    } catch (error) {
+        throw error;
     }
-    catch (error){
-        throw new Error('No se pudo eliminar el servicio deseado: ' + error.message);
+}
+
+const getAllServices = async () => {
+    try {
+        const obtainedServices = await Servicio.findAll();
+
+        return obtainedServices; 
+        
+    } catch (error) {
+        throw error; 
     }
 
 }
@@ -79,5 +87,6 @@ const deleteService = async (id) => {
 module.exports ={
     createService,
     editService,
-    deleteService
+    deleteService,
+    getAllServices
 }

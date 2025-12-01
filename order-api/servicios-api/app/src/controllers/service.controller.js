@@ -68,9 +68,23 @@ const deleteService = async (req,res) => {
     }
 }
 
+// CORREGIDO:
+const getAllServices = async (req, res) => { 
+    try {
+        const obtainedServices = await serviceService.getAllServices();
+        return res.status(200).json(obtainedServices);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Ha ocurrido un error al tratar de obtener los servicios',
+            error: error.message
+        });
+    }
+}
+
 
 module.exports={
     createService,
     editService,
-    deleteService
+    deleteService, 
+    getAllSercives
 } 
