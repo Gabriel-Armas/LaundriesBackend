@@ -162,6 +162,29 @@ const cancelOrder = async (req, res) => {
     }
 };
 
+const getSalesByDate = async (req, res) => {
+    try {
+        const { idSucursal, fecha } = req.query;
+
+        //Validaciones 
+        if (!idSucursal) {
+            return res.status(400).json({ message: 'Se requiere idSucursal' });
+        }
+        if (!fecha) {
+            return res.status(400).json({ message: 'Se requiere la fecha (YYYY-MM-DD)' });
+        }
+
+        const ventas = await orderService.getSalesByDate(idSucursal, fecha);
+        
+        return res.status(200).json(ventas);
+    } catch (error) {
+        return res.status(500).json({ 
+            message: 'Error al obtener ventas por fecha', 
+            error: error.message 
+        });
+    }
+};
+
 module.exports = {
     createOrder,
     getActiveSales,
@@ -169,8 +192,8 @@ module.exports = {
     getSaleDetails,
     getAllSales,
     getAllOrders,
-    // --- NUEVOS ---
     getAllSalesByClient,
     getAllOrdersByClient,
-    cancelOrder
+    cancelOrder,
+    getSalesByDate
 };

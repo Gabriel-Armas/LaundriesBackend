@@ -1,6 +1,7 @@
 const sequelize = require('../config/database');
 const Venta = require('./Venta');
 const OrdenServicio = require('./OrdenServicio');
+const Servicio = require('./Servicio');
 
 //Una Venta tiene muchos detalles
 Venta.hasMany(OrdenServicio, { 
@@ -18,5 +19,6 @@ OrdenServicio.belongsTo(Venta, {
 module.exports = {
     sequelize,
     Venta,
-    OrdenServicio
+    OrdenServicio,
+    Servicio
 };

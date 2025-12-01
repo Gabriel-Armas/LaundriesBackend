@@ -1,4 +1,4 @@
-const { sequelize, Venta, OrdenServicio } = require('../models');
+const { sequelize, Venta, OrdenServicio, Servicio } = require('../models');
 const { Op } = require('sequelize');
 
 //Esta función NO recibe req ni res, recibe datos puros.
@@ -16,68 +16,84 @@ function generateUniqueHexCode() {
 
 const createOrderTransaction = async (orderData) => {
     const { 
-    idCliente, 
-    idSucursal, 
-    idEmpleado,  
-    anotaciones, 
-    items 
+        idCliente, 
+        idSucursal, 
+        idEmpleado,  
+        anotaciones, 
+        items 
     } = orderData;
 
-    //Iniciamos la transacción
-    const generatedCode = generateUniqueHexCode()
+    const generatedCode = generateUniqueHexCode();
     const t = await sequelize.transaction();
 
     try {
-    // Creaamos una Venta
-    const nuevaVenta = await Venta.create({
-        codigo_recogida: generatedCode,
-        anotaciones_generales: anotaciones,
-        id_cliente: idCliente,
-        id_sucursal: idSucursal,
-        id_empleado: idEmpleado,
-        costo_total: 0, 
-    }, { transaction: t });
+        //Crear Venta 
+        const nuevaVenta = await Venta.create({
+            codigo_recogida: generatedCode,
+            anotaciones_generales: anotaciones,
+            id_cliente: idCliente,
+            id_sucursal: idSucursal,
+            id_empleado: idEmpleado,
+            costo_total: 0, 
+        }, { transaction: t });
 
-    let costoTotalCalculado = 0;
+        let costoTotalCalculado = 0;
 
-    // Creamos Detalles (son las ordenes de forma individual)
-    if (items && items.length > 0) {
-        for (const item of items) {
+        //Procesar Items
+        if (items && items.length > 0) {
+            for (const item of items) {
+                
+                //BUSCAMOS EL PRECIO REAL EN LA BD
+                const servicioDb = await Servicio.findByPk(item.idServicio, { transaction: t });
 
-            // En un futuro, aquí vamos a llamar a ServiciosAPI para validar el precio real
-            const subtotal = item.pesoKg * item.precioAplicado; 
-            costoTotalCalculado += subtotal;
+                //Validaciones
+                if (!servicioDb) {
+                    throw new Error(`El servicio con ID ${item.idServicio} no existe.`);
+                }
 
-            await OrdenServicio.create({
-            id_venta: nuevaVenta.id,
-            id_servicio: item.idServicio,
-            numero_prendas: item.numeroPrendas,
-            peso_kg: item.pesoKg,
-            precio_aplicado: item.precioAplicado,
-            subtotal: subtotal,
-            detalles_prendas: item.detalles,
-            estado: 'RECIBIDO',
-            fecha_entrega_estimada: item.fechaEntrega
-            }, { transaction: t });
+                console.log("Servicio encontrado:", servicioDb.toJSON());
+                
+                if (!servicioDb.activo) {
+                    throw new Error(`El servicio '${servicioDb.nombre}' ya no está activo.`);
+                }
+
+                //TOMAMOS EL PRECIO DE LA DB 
+                const precioReal = parseFloat(servicioDb.precio_por_kilo);
+
+                //CALCULAMOS SUBTOTAL
+                // subtotal = peso * precioReal
+                const subtotal = item.pesoKg * precioReal; 
+                
+                costoTotalCalculado += subtotal;
+
+                //CREAMOS LA ORDEN
+                //Guardamos el precio_aplicado como Snapshot del precio en ese momento
+                await OrdenServicio.create({
+                    id_venta: nuevaVenta.id,
+                    id_servicio: item.idServicio,
+                    numero_prendas: item.numeroPrendas,
+                    peso_kg: item.pesoKg,
+                    precio_aplicado: precioReal, //Usamos el real
+                    subtotal: subtotal,
+                    detalles_prendas: item.detalles,
+                    estado: 'RECIBIDO',
+                    fecha_entrega_estimada: item.fechaEntrega
+                }, { transaction: t });
+            }
         }
-    }
 
-    // Actualizamos total
-    nuevaVenta.costo_total = costoTotalCalculado;
-    await nuevaVenta.save({ transaction: t });
+        // 3. Actualizar Total Venta
+        nuevaVenta.costo_total = costoTotalCalculado;
+        await nuevaVenta.save({ transaction: t });
 
-    // Confirmamos éxito
-    await t.commit();
-    
-    // Devolvemos la venta creada para que el controlador la use
-    return nuevaVenta;
+        await t.commit();
+        return nuevaVenta;
 
     } catch (error) {
-        // Si falla, revertimos y lanzamos el error hacia arriba
         await t.rollback();
         throw error; 
     }
-    };
+};
 
 const getActiveSalesByClient = async (idSucursal, idCliente) => {
     //filtro dinámico
@@ -162,7 +178,6 @@ const updateOrderStatus = async (idOrden, nuevoEstado) => {
 };
 
 
-//Esta el metodo de eliminar ordenes faltante por impementar, tambien los middlewares y requisito de roles
 
 //Obtener TODAS las ventas de una sucursal, Historial
 const getAllSalesByBranch = async (idSucursal) => {
@@ -264,6 +279,34 @@ const cancelOrder = async (idOrden, idSucursal, codigoAutorizacion) => {
 
     return orden;
 };
+
+
+ //Formato fecha YYYY-MM-DD ,2025-11-30
+
+const getSalesByDate = async (idSucursal, fecha) => {
+    //Crear el rango de tiempo para el día completo
+    const fechaInicio = new Date(`${fecha}T00:00:00`);
+    const fechaFin = new Date(`${fecha}T23:59:59.999`);
+
+    //Buscar ventas
+    const ventas = await Venta.findAll({
+        where: {
+            id_sucursal: idSucursal,
+            fecha_recepcion: {
+                [Op.between]: [fechaInicio, fechaFin] //Entre X y Y
+            }
+        },
+        /*
+        include: [{ //PODEMOS QUITAR EL INCLUDE SI SOLO QUEREMOS LAS VENTAS
+            model: OrdenServicio,
+            as: 'items' //Incluimos los items para ver qué se vendió, aunque filtremos por venta
+        }],*/
+
+        order: [['fecha_recepcion', 'DESC']]
+    });
+
+    return ventas;
+};
         
     module.exports = {
     createOrderTransaction, //ya
@@ -274,7 +317,8 @@ const cancelOrder = async (idOrden, idSucursal, codigoAutorizacion) => {
     getAllOrdersByBranch,//ya
     getAllSalesByClient,//ya
     getAllOrdersByClient,//ya
-    cancelOrder//ya
+    cancelOrder,//ya
+    getSalesByDate
 
 
 };
