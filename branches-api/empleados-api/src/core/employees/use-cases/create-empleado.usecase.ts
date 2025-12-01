@@ -1,6 +1,5 @@
 import { Empleado } from '../domain/empleado.entity';
 import { EmpleadoRepository } from '../domain/empleado.repository';
-import { AuthPort } from '../domain/auth.port';
 import { JwtPayload } from '../../../infrastructure/auth/jwt-payload.type';
 
 export interface CreateEmpleadoInput {
@@ -10,30 +9,19 @@ export interface CreateEmpleadoInput {
   dni: string;
   fechaNacimiento: Date;
   idSucursal: number;
-  email: string;
-  password: string;
   currentUser: JwtPayload;
 }
 
 export class CreateEmpleadoUseCase {
-  constructor(
-    private readonly empleadoRepo: EmpleadoRepository,
-    private readonly authPort: AuthPort,
-  ) {}
+  constructor(private readonly empleadoRepo: EmpleadoRepository) {}
 
-  async execute(input: CreateEmpleadoInput): Promise<Empleado> {
+  async execute(input: CreateEmpleadoInput) {
     if (input.currentUser.role !== 'MANAGER') {
       throw new Error('Solo MANAGER puede crear empleados');
     }
 
-    const authUser = await this.authPort.createUser({
-      email: input.email,
-      password: input.password,
-      role: 'MANAGER',
-    });
-
     const empleado = new Empleado({
-      id: authUser.id,
+      id: crypto.randomUUID(),
       nombre: input.nombre,
       direccion: input.direccion,
       telefono: input.telefono,

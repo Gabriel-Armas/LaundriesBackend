@@ -15,10 +15,13 @@ export class EmpleadoPrismaRepository implements EmpleadoRepository {
       telefono: row.telefono,
       dni: row.dni,
       fechaNacimiento: row.fechaNacimiento,
-      idSucursal: row.idSucursal, // INT
+      idSucursal: row.idSucursal,
     });
   }
 
+  // --------------------------------------------------
+  // CREATE
+  // --------------------------------------------------
   async create(empleado: Empleado): Promise<Empleado> {
     const data = await this.prisma.empleado.create({
       data: empleado.toJSON(),
@@ -26,6 +29,9 @@ export class EmpleadoPrismaRepository implements EmpleadoRepository {
     return this.mapToEntity(data);
   }
 
+  // --------------------------------------------------
+  // UPDATE
+  // --------------------------------------------------
   async update(empleado: Empleado): Promise<Empleado> {
     const data = await this.prisma.empleado.update({
       where: { id: empleado.id },
@@ -34,8 +40,29 @@ export class EmpleadoPrismaRepository implements EmpleadoRepository {
     return this.mapToEntity(data);
   }
 
+  // --------------------------------------------------
+  // FIND BY ID
+  // --------------------------------------------------
   async findById(id: string): Promise<Empleado | null> {
     const data = await this.prisma.empleado.findUnique({ where: { id } });
     return data ? this.mapToEntity(data) : null;
+  }
+
+  // --------------------------------------------------
+  // GET ALL EMPLEADOS
+  // --------------------------------------------------
+  async findAll(): Promise<Empleado[]> {
+    const rows = await this.prisma.empleado.findMany();
+    return rows.map(r => this.mapToEntity(r));
+  }
+
+  // --------------------------------------------------
+  // GET EMPLEADOS DE UNA SUCURSAL
+  // --------------------------------------------------
+  async findBySucursal(idSucursal: number): Promise<Empleado[]> {
+    const rows = await this.prisma.empleado.findMany({
+      where: { idSucursal },
+    });
+    return rows.map(r => this.mapToEntity(r));
   }
 }

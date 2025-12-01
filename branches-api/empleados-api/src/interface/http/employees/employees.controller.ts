@@ -15,6 +15,7 @@ import { CreateGerenteUseCase } from '../../../core/employees/use-cases/create-g
 import { EditEmpleadoUseCase } from '../../../core/employees/use-cases/edit-empleado.usecase';
 import { EditGerenteUseCase } from '../../../core/employees/use-cases/edit-gerente.usecase';
 import { GetEmpleadoGeneralUseCase } from '../../../core/employees/use-cases/get-empleado-general.usecase';
+import { GetAllEmpleadosUseCase } from '../../../core/employees/use-cases/get-all-empleados.usecase';
 
 import { CreateEmpleadoDto } from './dtos/create-empleado.dto';
 import { EditEmpleadoDto } from './dtos/edit-empleado.dto';
@@ -22,7 +23,6 @@ import { EditEmpleadoDto } from './dtos/edit-empleado.dto';
 import { JwtAuthGuard } from '../../../infrastructure/auth/jwt-auth.guard';
 import { JwtPayload } from '../../../infrastructure/auth/jwt-payload.type';
 
-// para tener req tipado con user
 type RequestWithUser = Request & { user: JwtPayload };
 
 @Controller('employees')
@@ -33,6 +33,7 @@ export class EmployeesController {
     private readonly editEmpleado: EditEmpleadoUseCase,
     private readonly editGerente: EditGerenteUseCase,
     private readonly getEmpleadoGeneral: GetEmpleadoGeneralUseCase,
+    private readonly getAllEmpleadosUseCase: GetAllEmpleadosUseCase, 
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -121,5 +122,12 @@ export class EmployeesController {
   @Get(':id')
   async getEmpleadoHandler(@Param('id') id: string) {
     return this.getEmpleadoGeneral.execute(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getAllHandler(@Req() req: RequestWithUser) {
+    const currentUser = req.user;
+    return this.getAllEmpleadosUseCase.execute(currentUser);
   }
 }

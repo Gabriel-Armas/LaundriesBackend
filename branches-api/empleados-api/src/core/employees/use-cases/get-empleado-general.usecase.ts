@@ -1,4 +1,3 @@
-// src/core/employees/use-cases/get-empleado-general.usecase.ts
 import { EmpleadoRepository } from '../domain/empleado.repository';
 
 export class GetEmpleadoGeneralUseCase {
@@ -16,7 +15,7 @@ export class GetEmpleadoGeneralUseCase {
       telefono: data.telefono,
       dni: data.dni,
       fechaNacimiento: data.fechaNacimiento,
-      idSucursal: data.idSucursal, // INT
+      idSucursal: data.idSucursal,
     };
   }
 }

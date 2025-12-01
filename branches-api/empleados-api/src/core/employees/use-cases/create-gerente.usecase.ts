@@ -1,27 +1,18 @@
 import { Empleado } from '../domain/empleado.entity';
 import { EmpleadoRepository } from '../domain/empleado.repository';
-import { AuthPort } from '../domain/auth.port';
+import { JwtPayload } from '../../../infrastructure/auth/jwt-payload.type';
 import { CreateEmpleadoInput } from './create-empleado.usecase';
 
 export class CreateGerenteUseCase {
-  constructor(
-    private readonly empleadoRepo: EmpleadoRepository,
-    private readonly authPort: AuthPort,
-  ) {}
+  constructor(private readonly empleadoRepo: EmpleadoRepository) {}
 
-  async execute(input: CreateEmpleadoInput): Promise<Empleado> {
+  async execute(input: CreateEmpleadoInput) {
     if (input.currentUser.role !== 'ADMIN') {
       throw new Error('Solo ADMIN puede crear gerentes');
     }
 
-    const authUser = await this.authPort.createUser({
-      email: input.email,
-      password: input.password,
-      role: 'MANAGER', 
-    });
-
     const empleado = new Empleado({
-      id: authUser.id,
+      id: crypto.randomUUID(),
       nombre: input.nombre,
       direccion: input.direccion,
       telefono: input.telefono,

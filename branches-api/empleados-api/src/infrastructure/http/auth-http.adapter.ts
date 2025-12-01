@@ -1,34 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { AuthPort, AuthRole, AuthUser } from '../../core/employees/domain/auth.port';
+import { JwtService } from '@nestjs/jwt';
+import { AuthPort, AuthUser } from '../../core/employees/domain/auth.port';
 
 @Injectable()
 export class AuthHttpAdapter implements AuthPort {
-  constructor(private readonly http: HttpService) {}
+  constructor(private readonly jwtService: JwtService) {}
 
-  private baseUrl = process.env.AUTH_API_URL || 'http://host.docker.internal:4000';
+  async verifyToken(token: string): Promise<AuthUser> {
+    try {
+      const payload = this.jwtService.verify(token, {
+        secret: process.env.JWT_ACCESS_SECRET,
+      });
 
-  async createUser(input: {
-    email: string;
-    password: string;
-    role: AuthRole;
-  }): Promise<AuthUser> {
-    const { data } = await this.http.axiosRef.post(`${this.baseUrl}/users`, input);
-    return data;
+      return {
+        id: payload.sub,
+        role: payload.role,
+        email: payload.email,
+      };
+    } catch (err) {
+      throw new Error('Token inválido');
+    }
   }
 
-  async updateUser(input: {
-    id: string;
-    email?: string;
-    password?: string;
-    role?: AuthRole;
-  }): Promise<AuthUser> {
-    const { data } = await this.http.axiosRef.put(`${this.baseUrl}/users/${input.id}`, input);
-    return data;
+  createUser(): Promise<any> {
+    throw new Error('createUser no está implementado en employees-api');
   }
 
-  async getUserById(id: string): Promise<AuthUser | null> {
-    const { data } = await this.http.axiosRef.get(`${this.baseUrl}/users/${id}`);
-    return data ?? null;
+  updateUser(): Promise<any> {
+    throw new Error('updateUser no está implementado en employees-api');
+  }
+
+  getUserById(): Promise<any> {
+    throw new Error('getUserById no está implementado en employees-api');
   }
 }
