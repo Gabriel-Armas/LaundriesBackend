@@ -27,7 +27,7 @@ services:
       AUTH_API_URL: ${AUTH_API_URL}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
     ports:
-      - "3000:3000"
+      - "8882:8882"
 
 volumes:
   employees_db_data:
