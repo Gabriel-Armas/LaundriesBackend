@@ -8,7 +8,7 @@ export interface CreateEmpleadoInput {
   telefono: string;
   dni: string;
   fechaNacimiento: Date;
-  idSucursal: number;
+  idSucursal: string;
   currentUser: JwtPayload;
 }
 

@@ -59,7 +59,7 @@ export class EmpleadoPrismaRepository implements EmpleadoRepository {
   // --------------------------------------------------
   // GET EMPLEADOS DE UNA SUCURSAL
   // --------------------------------------------------
-  async findBySucursal(idSucursal: number): Promise<Empleado[]> {
+  async findBySucursal(idSucursal: string): Promise<Empleado[]> {
     const rows = await this.prisma.empleado.findMany({
       where: { idSucursal },
     });

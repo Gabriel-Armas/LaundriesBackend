@@ -1,8 +1,11 @@
 from typing import Optional, List
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from .models import SucursalModel
 from .schemas import SucursalCreate, SucursalEdit
+
 
 class SucursalRepository:
     def __init__(self, db: Session):
@@ -21,15 +24,19 @@ class SucursalRepository:
         self.db.refresh(sucursal)
         return sucursal
 
-    def get_by_id(self, sucursal_id: int) -> Optional[SucursalModel]:
-        return self.db.query(SucursalModel).filter(SucursalModel.id == sucursal_id).first()
+    def get_by_id(self, sucursal_id: UUID) -> Optional[SucursalModel]:
+        return (
+            self.db.query(SucursalModel)
+            .filter(SucursalModel.id == sucursal_id)
+            .first()
+        )
 
     def update(self, sucursal: SucursalModel) -> SucursalModel:
         self.db.add(sucursal)
         self.db.commit()
         self.db.refresh(sucursal)
         return sucursal
-    
+
     def list_active(self) -> List[SucursalModel]:
         return (
             self.db.query(SucursalModel)

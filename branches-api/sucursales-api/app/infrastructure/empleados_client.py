@@ -8,8 +8,8 @@ logger = logging.getLogger("sucursales_api")
 EMPLEADOS_API_BASE_URL = os.getenv("EMPLEADOS_API_BASE_URL")
 
 
-def is_manager_of_sucursal(empleado_id: UUID, sucursal_id: int, token: str) -> bool:
-    
+def is_manager_of_sucursal(empleado_id: UUID, sucursal_id: UUID, token: str) -> bool:
+
     if EMPLEADOS_API_BASE_URL is None:
         logger.error("EMPLEADOS_API_BASE_URL no está configurado")
         return False
@@ -53,11 +53,25 @@ def is_manager_of_sucursal(empleado_id: UUID, sucursal_id: int, token: str) -> b
         f"[empleados-client] JSON recibido desde empleados-api: {data}"
     )
 
-    empleado_sucursal_id = data.get("idSucursal")
+    empleado_sucursal_id_str = data.get("idSucursal")
+
+    if not empleado_sucursal_id_str:
+        logger.warning(
+            "[empleados-client] El JSON del empleado no trae idSucursal"
+        )
+        return False
+
+    try:
+        empleado_sucursal_id = UUID(empleado_sucursal_id_str)
+    except ValueError:
+        logger.error(
+            f"[empleados-client] idSucursal en empleados-api no es UUID válido: {empleado_sucursal_id_str}"
+        )
+        return False
 
     logger.info(
-        f"[empleados-client] Validando sucursal -> idSucursalEmpleado={empleado_sucursal_id}, "
-        f"sucursalObjetivo={sucursal_id}"
+        f"[empleados-client] Validando sucursal -> "
+        f"idSucursalEmpleado={empleado_sucursal_id}, sucursalObjetivo={sucursal_id}"
     )
 
     if empleado_sucursal_id != sucursal_id:

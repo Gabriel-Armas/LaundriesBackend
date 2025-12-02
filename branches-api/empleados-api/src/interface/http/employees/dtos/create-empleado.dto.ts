@@ -4,7 +4,7 @@ export class CreateEmpleadoDto {
   telefono: string;
   dni: string;
   fechaNacimiento: string; 
-  idSucursal: number;      
+  idSucursal: string;      
   email: string;
   password: string;
 }

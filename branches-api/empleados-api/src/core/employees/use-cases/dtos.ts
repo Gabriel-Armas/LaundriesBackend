@@ -4,5 +4,5 @@ export interface EmpleadoBaseInput {
     telefono?: string;
     dni?: string;
     fechaNacimiento?: Date;
-    idSucursal?: number;
+    idSucursal?: string;
   }
