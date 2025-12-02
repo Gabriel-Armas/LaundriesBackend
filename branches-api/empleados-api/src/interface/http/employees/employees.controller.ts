@@ -47,7 +47,7 @@ export class EmployeesController {
     const empleado = await this.createEmpleado.execute({
       ...body,
       fechaNacimiento: new Date(body.fechaNacimiento),
-      idSucursal: Number(body.idSucursal),
+      idSucursal: String(body.idSucursal),
       currentUser,
     });
 
@@ -65,7 +65,7 @@ export class EmployeesController {
     const empleado = await this.createGerente.execute({
       ...body,
       fechaNacimiento: new Date(body.fechaNacimiento),
-      idSucursal: Number(body.idSucursal),
+      idSucursal: String(body.idSucursal),
       currentUser,
     });
 
@@ -88,7 +88,7 @@ export class EmployeesController {
         ? new Date(body.fechaNacimiento)
         : undefined,
       idSucursal:
-        body.idSucursal !== undefined ? Number(body.idSucursal) : undefined,
+        body.idSucursal !== undefined ? String(body.idSucursal) : undefined,
       currentUser,
     });
 
@@ -111,7 +111,7 @@ export class EmployeesController {
         ? new Date(body.fechaNacimiento)
         : undefined,
       idSucursal:
-        body.idSucursal !== undefined ? Number(body.idSucursal) : undefined,
+        body.idSucursal !== undefined ? String(body.idSucursal) : undefined,
       currentUser,
     });
 

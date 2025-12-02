@@ -20,5 +20,5 @@ model Empleado {
   telefono        String
   dni             String
   fechaNacimiento DateTime
-  idSucursal      Int     
+  idSucursal      String   @db.Uuid      
 }

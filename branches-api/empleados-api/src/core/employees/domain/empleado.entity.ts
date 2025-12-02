@@ -5,7 +5,7 @@ export interface EmpleadoProps {
     telefono: string;
     dni: string;
     fechaNacimiento: Date;
-    idSucursal: number;     
+    idSucursal: string;     
   }
   
   export class Empleado {
