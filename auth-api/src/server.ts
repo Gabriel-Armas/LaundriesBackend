@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { sequelize } from "./infrastructure/db/sequelize/sequelize";
 import "./infrastructure/db/sequelize/AccountModel";
 import swaggerUi from "swagger-ui-express";
@@ -41,6 +42,15 @@ async function bootstrap() {
     );
 
     const app = express();
+
+    app.use(
+      cors({
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+      })
+    );
+
     app.use(express.json());
 
     app.get("/", (_req, res) => {
