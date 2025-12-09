@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  estadisticas_api:
+    container_name: estadisticas_api
+    build: .
+    restart: always
+    env_file: .env
+    ports:
+      - "8889:8889"
+    networks:
+      - estadisticas_net
+
+networks:
+  estadisticas_net:
+    driver: bridge
