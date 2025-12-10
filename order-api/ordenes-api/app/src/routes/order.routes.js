@@ -18,7 +18,7 @@ router.get('/ventas',verifyToken, checkRole(['MANAGER','ADMIN']), orderControlle
 
 //Reporte de Ventas por fecha en formato  
 //http://localhost:4003/ordenes/ventas/por-fecha?idSucursal=XYZ&fecha=2025-11-30
-router.get('/ventas/por-fecha', verifyToken, checkRole(['MANAGER', 'ADMIN','EMPLOYEE']), orderController.getSalesByDate);
+router.get('/ventas/por-fecha', verifyToken, checkRole(['MANAGER', 'ADMIN','EMPLOY']), orderController.getSalesByDate);
 
 
 //Obtener TODAS las órdenes, items, de la sucursal
