@@ -1,50 +1,73 @@
+import logging
 from datetime import datetime
 from collections import defaultdict
-from core.logger import get_logger
+from services.sucursales_service import obtener_sucursales
 from services.ordenes_service import obtener_ventas_por_sucursal
 from services.empleados_service import obtener_empleados
 
-logger = get_logger("REPORTE_SERVICE")
+logger = logging.getLogger(__name__)
 
-async def generar_reporte(id_sucursal: str):
-    logger.info(f"Iniciando generación de reporte para sucursal={id_sucursal}")
+MESES = {
+    1: "enero", 2: "febrero", 3: "marzo", 4: "abril",
+    5: "mayo", 6: "junio", 7: "julio", 8: "agosto",
+    9: "septiembre", 10: "octubre", 11: "noviembre", 12: "diciembre"
+}
 
-    ventas = await obtener_ventas_por_sucursal(id_sucursal)
-    empleados = await obtener_empleados()
 
-    empleados_map = {e["id"]: e["nombre"] for e in empleados}
+async def generar_reporte_anual(anio: int, token: str):
+    logger.info(f"[SERVICE] Iniciando agregación anual | año={anio}")
 
-    ventas_mensuales = defaultdict(float)
+    sucursales = await obtener_sucursales(token)
+    logger.info(f"[SERVICE] Sucursales obtenidas: {len(sucursales)}")
 
-    for v in ventas:
-        fecha = datetime.fromisoformat(v["fecha_recepcion"].replace("Z", ""))
-        mes = fecha.month
-        ventas_mensuales[mes] += float(v["costo_total"])
+    ventas_global = defaultdict(float)
+    detalle_por_sucursal = []
+    empleados_contador = defaultdict(int)
 
-    ventas_empleados = defaultdict(float)
+    for sucursal in sucursales:
+        s_id = sucursal["id"]
+        s_nombre = sucursal["nombre"]
 
-    for v in ventas:
-        ventas_empleados[v["id_empleado"]] += float(v["costo_total"])
+        logger.info(f"[SERVICE] Consultando ventas para sucursal {s_nombre} ({s_id})")
+
+        ventas = await obtener_ventas_por_sucursal(s_id, token)
+
+        ventas_por_mes = defaultdict(float)
+
+        for venta in ventas:
+            fecha = datetime.fromisoformat(venta["fecha_recepcion"].replace("Z", ""))
+
+            if fecha.year != anio:
+                continue
+
+            monto = float(venta["costo_total"])
+            mes = MESES[fecha.month]
+
+            ventas_por_mes[mes] += monto
+            ventas_global[mes] += monto
+
+            empleados_contador[venta["id_empleado"]] += 1
+
+        detalle_por_sucursal.append({
+            "sucursal": s_nombre,
+            "ventas": ventas_por_mes
+        })
+
+    empleados = await obtener_empleados(token)
+    empleados_por_id = {e["id"]: e["nombre"] for e in empleados}
 
     top_empleados = sorted(
-        [
-            {
-                "id_empleado": emp_id,
-                "nombre": empleados_map.get(emp_id, "Desconocido"),
-                "total_ventas": total,
-            }
-            for emp_id, total in ventas_empleados.items()
-        ],
-        key=lambda x: x["total_ventas"],
-        reverse=True,
+        [{"empleado": empleados_por_id.get(emp_id, "Desconocido"), "ventas": count}
+         for emp_id, count in empleados_contador.items()],
+        key=lambda x: x["ventas"],
+        reverse=True
     )
 
-    logger.info("Reporte generado correctamente")
+    logger.info("[SERVICE] Reporte anual consolidado correctamente.")
 
     return {
-        "ventas_mensuales": [
-            {"mes": m, "total": total}
-            for m, total in sorted(ventas_mensuales.items())
-        ],
-        "top_empleados": top_empleados[:5],  # TOP 5
+        "anio": anio,
+        "ventas_totales": ventas_global,
+        "top_empleados": top_empleados,
+        "detalle_por_sucursal": detalle_por_sucursal
     }

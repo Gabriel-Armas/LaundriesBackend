@@ -9,9 +9,6 @@ logger = get_logger("SECURITY")
 security = HTTPBearer()
 
 def get_current_user(token: str = Depends(security)):
-    """
-    Aquí se valida el token JWT y se extrae el rol.
-    """
     try:
         decoded = jwt.decode(token.credentials, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         logger.info(f"Token válido: user={decoded.get('sub')} role={decoded.get('role')}")
