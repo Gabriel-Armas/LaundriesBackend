@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: corte_caja_db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - corte_caja_net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: corte_caja_api
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - db
+    ports:
+      - "8886:8886"
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      ORDENES_API_BASE_URL: ${ORDENES_API_BASE_URL}
+
+      DATABASE_URL: ${DATABASE_URL}
+
+      LOG_LEVEL: ${LOG_LEVEL}
+      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      FORCE_HTTPS: ${FORCE_HTTPS}
+    networks:
+      - corte_caja_net
+
+networks:
+  corte_caja_net:
+
+volumes:
+  postgres_data:
