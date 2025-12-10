@@ -38,13 +38,13 @@ class CorteCajaService:
             f"dinero_inicial={dto.dinero_inicial} monto_reportado={dto.monto_reportado_por_empleado}"
         )
 
-        if user.role != "EMPLOY":
+        if user.role != "EMPLOYEE":
             logger.warning(
                 f"[SERVICE] Crear corte denegado por rol | user_id={user.user_id} role={user.role}"
             )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Sólo EMPLOY puede crear cortes de caja",
+                detail="Sólo EMPLOYEE puede crear cortes de caja",
             )
 
         if dto.fecha_fin < dto.fecha_inicio:
@@ -128,7 +128,7 @@ class CorteCajaService:
             f"[SERVICE] Obtener corte | corte_id={corte_id} user_id={user.user_id} role={user.role}"
         )
 
-        if user.role not in ("EMPLOY", "MANAGER", "ADMIN"):
+        if user.role not in ("EMPLOYEE", "MANAGER", "ADMIN"):
             logger.warning(
                 f"[SERVICE] Acceso denegado al obtener corte | corte_id={corte_id} role={user.role}"
             )

@@ -8,7 +8,7 @@ from app.auth.jwt_utils import decode_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-Role = Literal["ADMIN", "MANAGER", "EMPLOY", "DELETED"]
+Role = Literal["ADMIN", "MANAGER", "EMPLOYEE", "DELETED"]
 
 
 class CurrentUser:

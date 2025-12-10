@@ -47,7 +47,7 @@ AccountModel.init(
     role: {
       type: DataTypes.STRING(50),
       allowNull: false,
-      defaultValue: "EMPLOY",
+      defaultValue: "EMPLOYEE",
     },
   },
   {

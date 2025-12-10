@@ -62,7 +62,7 @@ class SucursalService:
         return SucursalOut.from_orm(sucursal)
 
     def get_sucursal(self, sucursal_id: UUID, user: CurrentUser) -> SucursalOut:
-        if user.role not in ("ADMIN", "MANAGER", "EMPLOY"):
+        if user.role not in ("ADMIN", "MANAGER", "EMPLOYEE"):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado"
             )
@@ -119,7 +119,7 @@ class SucursalService:
         user: CurrentUser,
         raw_token: str,
     ) -> ValidarClaveResponse:
-        if user.role not in ("ADMIN", "MANAGER", "EMPLOY"):
+        if user.role not in ("ADMIN", "MANAGER", "EMPLOYEE"):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado"
             )
@@ -149,7 +149,7 @@ class SucursalService:
         )
 
     def list_sucursales(self, user: CurrentUser) -> List[SucursalOut]:
-        if user.role not in ("ADMIN", "MANAGER", "EMPLOY"):
+        if user.role not in ("ADMIN", "MANAGER", "EMPLOYEE"):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="No autorizado",
