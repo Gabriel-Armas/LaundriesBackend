@@ -12,7 +12,7 @@ export class CreateGerenteUseCase {
     }
 
     const empleado = new Empleado({
-      id: crypto.randomUUID(),
+      id: input.idEmpleado,
       nombre: input.nombre,
       direccion: input.direccion,
       telefono: input.telefono,

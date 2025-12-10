@@ -1,5 +1,5 @@
+// src/interface/http/employees/employees.module.ts
 import { Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
 
 import { EmployeesController } from './employees.controller';
@@ -18,7 +18,6 @@ import { JwtAuthGuard } from '../../../infrastructure/auth/jwt-auth.guard';
 
 @Module({
   imports: [
-    HttpModule,
     JwtModule.register({
       secret: process.env.JWT_ACCESS_SECRET,
       signOptions: { algorithm: 'HS256' },

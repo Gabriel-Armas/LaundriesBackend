@@ -45,9 +45,13 @@ export class EmployeesController {
     const currentUser = req.user;
 
     const empleado = await this.createEmpleado.execute({
-      ...body,
+      idEmpleado: body.idEmpleado,
+      nombre: body.nombre,
+      direccion: body.direccion,
+      telefono: body.telefono,
+      dni: body.dni,
       fechaNacimiento: new Date(body.fechaNacimiento),
-      idSucursal: String(body.idSucursal),
+      idSucursal: body.idSucursal,
       currentUser,
     });
 
@@ -63,9 +67,13 @@ export class EmployeesController {
     const currentUser = req.user;
 
     const empleado = await this.createGerente.execute({
-      ...body,
+      idEmpleado: body.idEmpleado,
+      nombre: body.nombre,
+      direccion: body.direccion,
+      telefono: body.telefono,
+      dni: body.dni,
       fechaNacimiento: new Date(body.fechaNacimiento),
-      idSucursal: String(body.idSucursal),
+      idSucursal: body.idSucursal,
       currentUser,
     });
 

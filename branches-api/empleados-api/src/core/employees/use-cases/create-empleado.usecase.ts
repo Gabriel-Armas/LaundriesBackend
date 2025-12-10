@@ -3,6 +3,7 @@ import { EmpleadoRepository } from '../domain/empleado.repository';
 import { JwtPayload } from '../../../infrastructure/auth/jwt-payload.type';
 
 export interface CreateEmpleadoInput {
+  idEmpleado: string;
   nombre: string;
   direccion: string;
   telefono: string;
@@ -21,7 +22,7 @@ export class CreateEmpleadoUseCase {
     }
 
     const empleado = new Empleado({
-      id: crypto.randomUUID(),
+      id: input.idEmpleado,
       nombre: input.nombre,
       direccion: input.direccion,
       telefono: input.telefono,
