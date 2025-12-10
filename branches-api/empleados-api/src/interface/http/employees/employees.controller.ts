@@ -16,6 +16,7 @@ import { EditEmpleadoUseCase } from '../../../core/employees/use-cases/edit-empl
 import { EditGerenteUseCase } from '../../../core/employees/use-cases/edit-gerente.usecase';
 import { GetEmpleadoGeneralUseCase } from '../../../core/employees/use-cases/get-empleado-general.usecase';
 import { GetAllEmpleadosUseCase } from '../../../core/employees/use-cases/get-all-empleados.usecase';
+import { GetManagersUseCase } from '../../../core/employees/use-cases/get-managers.usecase';
 
 import { CreateEmpleadoDto } from './dtos/create-empleado.dto';
 import { EditEmpleadoDto } from './dtos/edit-empleado.dto';
@@ -33,9 +34,23 @@ export class EmployeesController {
     private readonly editEmpleado: EditEmpleadoUseCase,
     private readonly editGerente: EditGerenteUseCase,
     private readonly getEmpleadoGeneral: GetEmpleadoGeneralUseCase,
-    private readonly getAllEmpleadosUseCase: GetAllEmpleadosUseCase, 
+    private readonly getAllEmpleadosUseCase: GetAllEmpleadosUseCase,
+    private readonly getManagersUseCase: GetManagersUseCase,
   ) {}
 
+  // -----------------------------------------------------
+  // GET /employees/managers  ← debe ir ANTES de /:id !!!
+  // -----------------------------------------------------
+  @UseGuards(JwtAuthGuard)
+  @Get('managers')
+  async getManagersHandler(@Req() req: RequestWithUser) {
+    const currentUser = req.user;
+    return this.getManagersUseCase.execute(currentUser);
+  }
+
+  // -----------------------------------------------------
+  // CREATE EMPLOYEE
+  // -----------------------------------------------------
   @UseGuards(JwtAuthGuard)
   @Post()
   async createEmpleadoHandler(
@@ -58,6 +73,9 @@ export class EmployeesController {
     return empleado.toJSON();
   }
 
+  // -----------------------------------------------------
+  // CREATE MANAGER
+  // -----------------------------------------------------
   @UseGuards(JwtAuthGuard)
   @Post('gerentes')
   async createGerenteHandler(
@@ -80,6 +98,9 @@ export class EmployeesController {
     return empleado.toJSON();
   }
 
+  // -----------------------------------------------------
+  // EDIT EMPLOYEE
+  // -----------------------------------------------------
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async editEmpleadoHandler(
@@ -103,6 +124,9 @@ export class EmployeesController {
     return empleado.toJSON();
   }
 
+  // -----------------------------------------------------
+  // EDIT MANAGER
+  // -----------------------------------------------------
   @UseGuards(JwtAuthGuard)
   @Put('gerentes/:id')
   async editGerenteHandler(
@@ -126,12 +150,18 @@ export class EmployeesController {
     return empleado.toJSON();
   }
 
+  // -----------------------------------------------------
+  // GET EMPLOYEE BY ID
+  // -----------------------------------------------------
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getEmpleadoHandler(@Param('id') id: string) {
     return this.getEmpleadoGeneral.execute(id);
   }
 
+  // -----------------------------------------------------
+  // GET ALL EMPLOYEES
+  // -----------------------------------------------------
   @UseGuards(JwtAuthGuard)
   @Get()
   async getAllHandler(@Req() req: RequestWithUser) {

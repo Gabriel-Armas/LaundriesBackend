@@ -6,4 +6,5 @@ export interface EmpleadoRepository {
   findById(id: string): Promise<Empleado | null>;
   findAll(): Promise<Empleado[]>;
   findBySucursal(idSucursal: string): Promise<Empleado[]>;
+  findManagers(): Promise<Empleado[]>;
 }
