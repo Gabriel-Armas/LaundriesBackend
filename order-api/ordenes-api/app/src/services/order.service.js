@@ -247,9 +247,7 @@ const getAllOrdersByClient = async (id) => {
 
 const validarCodigoSucursal = async (idSucursal, codigoIngresado, token) => {
     try {
-        // OJO: Estás usando una IP de Tailscale/VPN (100.x.x.x) o local.
-        // Si tu amigo está en la misma red Docker, usa el nombre del servicio.
-        // Si está en otra PC (Tailscale), asegúrate que el contenedor tenga acceso.
+        
         const url = `http://100.68.70.25:8881/sucursales/${idSucursal}/validar-clave`;
 
         console.log("--> 1. Intentando conectar a:", url);
@@ -266,21 +264,21 @@ const validarCodigoSucursal = async (idSucursal, codigoIngresado, token) => {
             })
         });
         
-        // --- AQUÍ ESTÁ LA CLAVE DEL DIAGNÓSTICO ---
+        //para ver el diagnostico
         if (!response.ok) {
-            const errorText = await response.text(); // Leemos qué dijo Python
-            console.error(`❌ Error API Sucursales. Status: ${response.status}`);
-            console.error(`❌ Mensaje del Backend Python: ${errorText}`);
+            const errorText = await response.text(); //esto lo dice py
+            console.error(`error api sucursales. Status: ${response.status}`);
+            console.error(`mensaje del backend python: ${errorText}`);
             return false;
         }
         
         const data = await response.json();
-        console.log("✅ Respuesta API Sucursales:", data);
+        console.log("respuesta api sucursales:", data);
         
         return data.valida; 
 
     } catch (error) {
-        console.error("❌ Error CRÍTICO de red o conexión:", error.message);
+        console.error(" Error CRÍTICO de red o conexión:", error.message);
         // Esto pasa si la IP es inalcanzable desde dentro del contenedor
         return false;
     }
