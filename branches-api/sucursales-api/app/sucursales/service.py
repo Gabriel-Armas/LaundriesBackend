@@ -119,7 +119,7 @@ class SucursalService:
         user: CurrentUser,
         raw_token: str,
     ) -> ValidarClaveResponse:
-        if user.role not in ("ADMIN", "MANAGER"):
+        if user.role not in ("ADMIN", "MANAGER", "EMPLOY"):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado"
             )
