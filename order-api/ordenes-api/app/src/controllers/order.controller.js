@@ -134,19 +134,27 @@ const getAllOrdersByClient = async (req, res) => {
     }
 };
 
-// PATCH cancelar una orden, es cambiarle el estado
+//PATCH cancelar una orden, es cambiarle el estado
 const cancelOrder = async (req, res) => {
     try {
-        const { id } = req.params; // ID de la orden a cancelar
-        const { idSucursal, codigoAutorizacion } = req.body; // Datos de seguridad
+        const { id } = req.params; 
+        const { idSucursal, codigoAutorizacion } = req.body; 
+
+        // aca capturamos el token que viene como bareer en el header Authorization
+        const token = req.headers['authorization'];
+
+        if (!token) {
+            return res.status(401).json({ message: 'No se proporcionó token de autorización' });
+        }
 
         if (!idSucursal || !codigoAutorizacion) {
             return res.status(400).json({ 
-                message: 'Se requiere idSucursal y codigoAutorizacion para cancelar' 
+                message: 'Se requiere idSucursal y codigoAutorizacion' 
             });
         }
 
-        const ordenCancelada = await orderService.cancelOrder(id, idSucursal, codigoAutorizacion);
+        // pasamos ell token tambien al servicio para validarlo ahi
+        const ordenCancelada = await orderService.cancelOrder(id, idSucursal, codigoAutorizacion, token);
 
         return res.status(200).json({
             message: 'Orden cancelada exitosamente',
@@ -154,7 +162,7 @@ const cancelOrder = async (req, res) => {
         });
 
     } catch (error) {
-        // Si el error es por código inválido, podríamos devolver 403 (Forbidden) o 400
+    
         return res.status(400).json({ 
             message: 'No se pudo cancelar la orden',
             error: error.message 
