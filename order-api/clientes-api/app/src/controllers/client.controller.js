@@ -39,10 +39,16 @@ const getClient = async (req, res) => {
     }
 }
 
-//Obtener TODOS los clientes
+// ...
 const getAllClients = async (req, res) => {
     try {
-        const clients = await clientService.getAllClients();
+        //extraemos el query param 'busqueda'
+        //GET /clientes?busqueda=Juan
+        const { busqueda } = req.query; 
+
+        
+        const clients = await clientService.getAllClients(busqueda);
+        
         return res.status(200).json(clients);
     } catch (error) {
         return res.status(500).json({
@@ -51,6 +57,7 @@ const getAllClients = async (req, res) => {
         });
     }
 }
+// ...
 
 //Editar Cliente
 const editClient = async (req, res) => {

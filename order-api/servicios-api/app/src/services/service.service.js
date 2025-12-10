@@ -84,9 +84,25 @@ const getAllServices = async () => {
 
 }
 
+const getAllActiveServices = async () => {
+    try {
+        const activeServices = await Servicio.findAll({
+            where: {
+                activo: true
+            }
+        });
+
+        return activeServices;
+        
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports ={
     createService,
     editService,
     deleteService,
-    getAllServices
+    getAllServices,
+    getAllActiveServices
 }

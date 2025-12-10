@@ -41,17 +41,49 @@ const getClient = async (id) => {
     }
 }
 
-const getAllClients = async () =>{
-    try {
-        const allClients = await Cliente.findAll()
-        return allClients;
+const { Cliente } = require('../models/index');
+// 1. IMPORTAR OPERADORES
+const { Op } = require('sequelize'); 
 
+
+// MODIFICAR getAllClients PARA ACEPTAR Busqueda
+const { Cliente } = require('../models/index');
+const { Op } = require('sequelize'); // <--- IMPORTANTE: Importar Op
+
+
+const getAllClients = async (terminoBusqueda) => {
+    try {
+        let opciones = {};
+
+        //Si hay termino de búsqueda, aplicamos el filtro inteligente
+        if (terminoBusqueda) {
+            opciones = {
+                where: {
+                    [Op.or]: [
+                        //por CORREO 
+                        { correo: { [Op.iLike]: `%${terminoBusqueda}%` } },
+                        
+                        //por Telefono 
+                        { telefono: { [Op.like]: `%${terminoBusqueda}%` } },
+
+                        //por NOMBRE (Por si acaso no se saben los otros)
+                        { nombre: { [Op.iLike]: `%${terminoBusqueda}%` } }
+                    ]
+                }
+            };
+        }
+
+        // Si terminoBusqueda viene vacío, findAll(opciones) traerá todo (sin where)
+        const allClients = await Cliente.findAll(opciones);
+        return allClients;
 
     } catch (error) {
         throw error;
     }
-
 }
+
+
+
 
 const editClient = async (id,data) => {
 

@@ -95,7 +95,7 @@ const createOrderTransaction = async (orderData) => {
     }
 };
 
-const getActiveSalesByClient = async (idSucursal, idCliente) => {
+const getActiveSalesByClient = async (idSucursal, idCliente) => { //ya
     //filtro dinámico
     const ventaFilter = {
         id_sucursal: idSucursal, //filtramos por sucursal 
@@ -343,16 +343,16 @@ const getSalesByDate = async (idSucursal, fecha) => {
 };
         
     module.exports = {
-    createOrderTransaction, //ya
-    getActiveSalesByClient, //ya
-    updateOrderStatus, //ya
-    getSaleDetails, //ya
-    getAllSalesByBranch, //ya
-    getAllOrdersByBranch,//ya
+    createOrderTransaction, //ya SI
+    getActiveSalesByClient, //ya SI
+    updateOrderStatus, //ya SI
+    getSaleDetails, //ya 
+    getAllSalesByBranch, //ya SI 
+    getAllOrdersByBranch,//ya 
     getAllSalesByClient,//ya
     getAllOrdersByClient,//ya
-    cancelOrder,//ya
-    getSalesByDate
+    cancelOrder,//ya SI
+    getSalesByDate //GABO
 
 
 };

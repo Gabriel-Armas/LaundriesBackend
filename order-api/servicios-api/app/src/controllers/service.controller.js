@@ -81,10 +81,23 @@ const getAllServices = async (req, res) => {
     }
 }
 
+const getAllActiveServices = async (req, res) => {
+    try {
+        const activeServices = await serviceService.getAllActiveServices();
+        return res.status(200).json(activeServices);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Ha ocurrido un error al tratar de obtener los servicios activos',
+            error: error.message
+        });
+    }
+}
+
 
 module.exports={
     createService,
     editService,
     deleteService, 
-    getAllServices
+    getAllServices,
+    getAllActiveServices
 } 
