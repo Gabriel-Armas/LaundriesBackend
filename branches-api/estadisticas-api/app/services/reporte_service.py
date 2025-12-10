@@ -14,11 +14,24 @@ MESES = {
 }
 
 
-async def generar_reporte_anual(anio: int, token: str):
-    logger.info(f"[SERVICE] Iniciando agregación anual | año={anio}")
+async def generar_reporte_anual(anio: int, token: str, sucursal_id: str | None = None):
+    logger.info(f"[SERVICE] Iniciando agregación anual | año={anio} | filtro_sucursal={sucursal_id}")
 
     sucursales = await obtener_sucursales(token)
     logger.info(f"[SERVICE] Sucursales obtenidas: {len(sucursales)}")
+
+    if sucursal_id:
+        sucursales = [s for s in sucursales if s["id"] == sucursal_id]
+        logger.info(f"[SERVICE] Filtrado a una sucursal: {len(sucursales)} encontrada(s)")
+
+        if not sucursales:
+            return {
+                "anio": anio,
+                "detalle_por_sucursal": [],
+                "ventas_totales": {},
+                "top_empleados": [],
+                "mensaje": f"La sucursal {sucursal_id} no existe."
+            }
 
     ventas_global = defaultdict(float)
     detalle_por_sucursal = []
@@ -50,6 +63,7 @@ async def generar_reporte_anual(anio: int, token: str):
 
         detalle_por_sucursal.append({
             "sucursal": s_nombre,
+            "sucursal_id": s_id,
             "ventas": ventas_por_mes
         })
 
@@ -57,8 +71,10 @@ async def generar_reporte_anual(anio: int, token: str):
     empleados_por_id = {e["id"]: e["nombre"] for e in empleados}
 
     top_empleados = sorted(
-        [{"empleado": empleados_por_id.get(emp_id, "Desconocido"), "ventas": count}
-         for emp_id, count in empleados_contador.items()],
+        [
+            {"empleado": empleados_por_id.get(emp_id, "Desconocido"), "ventas": count}
+            for emp_id, count in empleados_contador.items()
+        ],
         key=lambda x: x["ventas"],
         reverse=True
     )
