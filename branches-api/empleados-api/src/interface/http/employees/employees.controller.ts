@@ -16,7 +16,7 @@ import { EditEmpleadoUseCase } from '../../../core/employees/use-cases/edit-empl
 import { EditGerenteUseCase } from '../../../core/employees/use-cases/edit-gerente.usecase';
 import { GetEmpleadoGeneralUseCase } from '../../../core/employees/use-cases/get-empleado-general.usecase';
 import { GetAllEmpleadosUseCase } from '../../../core/employees/use-cases/get-all-empleados.usecase';
-
+import { GetEmpleadosBySucursalUseCase } from '../../../core/employees/use-cases/get-empleados-by-sucursal.usecase';
 import { CreateEmpleadoDto } from './dtos/create-empleado.dto';
 import { EditEmpleadoDto } from './dtos/edit-empleado.dto';
 
@@ -34,6 +34,7 @@ export class EmployeesController {
     private readonly editGerente: EditGerenteUseCase,
     private readonly getEmpleadoGeneral: GetEmpleadoGeneralUseCase,
     private readonly getAllEmpleadosUseCase: GetAllEmpleadosUseCase, 
+    private readonly getEmpleadosBySucursalUseCase: GetEmpleadosBySucursalUseCase,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -137,5 +138,19 @@ export class EmployeesController {
   async getAllHandler(@Req() req: RequestWithUser) {
     const currentUser = req.user;
     return this.getAllEmpleadosUseCase.execute(currentUser);
+  }
+
+  // -----------------------------------------------------
+  // GET EMPLOYEES BY SUCURSAL
+  // GET /employees/by-sucursal/:sucursalId
+  // -----------------------------------------------------
+  @UseGuards(JwtAuthGuard)
+  @Get('by-sucursal/:sucursalId')
+  async getBySucursalHandler(
+    @Req() req: RequestWithUser,
+    @Param('sucursalId') sucursalId: string,
+  ) {
+    const currentUser = req.user;
+    return this.getEmpleadosBySucursalUseCase.execute(currentUser, sucursalId);
   }
 }
