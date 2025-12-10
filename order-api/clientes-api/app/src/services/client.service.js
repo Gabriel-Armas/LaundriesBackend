@@ -1,61 +1,77 @@
-const {Cliente} = require('../models/index');
+// 1. IMPORTACIONES (Solo una vez al principio)
+const { Op } = require('sequelize');
+const { Cliente } = require('../models/index');
 
 const createClient = async (data) => {
     const {
-            nombre,
-            telefono,
-            correo
-        }=data;
+        nombre,
+        telefono,
+        correo
+    } = data;
 
-    try{
-
+    try {
         const nuevoCliente = await Cliente.create({
-            nombre:nombre,
-            telefono:telefono,
-            correo:correo
+            nombre: nombre,
+            telefono: telefono,
+            correo: correo
         })
 
         return nuevoCliente;
 
-    }catch (error){
+    } catch (error) {
         throw new Error('El cliente no pudo ser creado correctamente: ' + error.message);
     }
-
 }
 
 const getClient = async (id) => {
     try {
-
         const clienteObtenido = await Cliente.findByPk(id);
-        
+
         if (!clienteObtenido) {
             throw new Error('El cliente no pudo ser encontrado');
-            
         }
 
         return clienteObtenido;
-        
+
     } catch (error) {
         throw error;
-        
     }
 }
 
-const getAllClients = async () =>{
+// Método modificado para aceptar búsqueda inteligente
+const getAllClients = async (terminoBusqueda) => {
     try {
-        const allClients = await Cliente.findAll()
+        let opciones = {};
+
+        // Si hay termino de búsqueda, aplicamos el filtro inteligente
+        if (terminoBusqueda) {
+            opciones = {
+                where: {
+                    [Op.or]: [
+                        // por CORREO 
+                        { correo: { [Op.iLike]: `%${terminoBusqueda}%` } },
+
+                        // por Telefono 
+                        { telefono: { [Op.like]: `%${terminoBusqueda}%` } },
+
+                        // por NOMBRE
+                        { nombre: { [Op.iLike]: `%${terminoBusqueda}%` } }
+                    ]
+                }
+            };
+        }
+
+        // Si terminoBusqueda viene vacío, findAll(opciones) traerá todo
+        const allClients = await Cliente.findAll(opciones);
         return allClients;
 
-
     } catch (error) {
         throw error;
     }
-
 }
 
-const editClient = async (id,data) => {
-
-    try{
+const editClient = async (id, data) => {
+    try {
         const client = await Cliente.findByPk(id);
 
         if (!client) {
@@ -63,18 +79,17 @@ const editClient = async (id,data) => {
         }
 
         const newData = {}
-        if (data.nombre) newData.nombre= data.nombre
-        if (data.telefono) newData.telefono= data.telefono
-        if (data.correo) newData.correo= data.correo
+        if (data.nombre) newData.nombre = data.nombre
+        if (data.telefono) newData.telefono = data.telefono
+        if (data.correo) newData.correo = data.correo
 
         const updatedClient = await client.update(newData);
 
-        return updatedClient; 
+        return updatedClient;
 
-    } catch (error){
+    } catch (error) {
         throw error;
     }
-
 }
 
 const deleteClient = async (id) => {
@@ -85,15 +100,14 @@ const deleteClient = async (id) => {
         }
 
         await cliente.destroy();
-        return {message:"Cliente eliminado correctamente"}
+        return { message: "Cliente eliminado correctamente" }
 
     } catch (error) {
         throw error;
     }
 }
 
-
-module.exports={
+module.exports = {
     createClient,
     getClient,
     getAllClients,
