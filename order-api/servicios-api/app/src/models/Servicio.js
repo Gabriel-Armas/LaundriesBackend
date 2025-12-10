@@ -13,6 +13,8 @@ const Servicio = sequelize.define('Servicio', {
     },
     descripcion: {
         type: DataTypes.TEXT,
+        allowNull: false,
+        defaultValue: 'Descripcion vacia' //se crea automaticamente si no se manda nada
     },
     precio_por_kilo: { 
         type: DataTypes.DECIMAL(10, 2),
