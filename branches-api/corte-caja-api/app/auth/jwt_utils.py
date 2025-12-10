@@ -15,7 +15,6 @@ def decode_token(token: str) -> dict:
     except JWTError as e:
         raise ValueError("Token inválido o expirado") from e
 
-    # Validación básica
     if "userId" not in payload or "role" not in payload:
         raise ValueError("Token inválido: faltan campos userId o role")
 

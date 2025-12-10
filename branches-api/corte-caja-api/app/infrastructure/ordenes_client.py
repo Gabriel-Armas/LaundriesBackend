@@ -19,14 +19,6 @@ def get_total_ventas_por_fecha(
     fecha: date,
     token: str,
 ) -> Decimal:
-    """
-    Llama a órdenes-api:
-      GET {ORDENES_API_BASE_URL}/ordenes/ventas/por-fecha
-          ?idSucursal={sucursal_id}
-          &fecha=YYYY-MM-DD
-
-    Suma todos los 'costo_total' del arreglo y devuelve el total como Decimal.
-    """
 
     if ORDENES_API_BASE_URL is None:
         raise RuntimeError("ORDENES_API_BASE_URL no está configurado")
