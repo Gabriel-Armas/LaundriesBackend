@@ -245,35 +245,71 @@ const getAllOrdersByClient = async (id) => {
 }
 
 
-//tengo que ajustarla de acuerdo a lo que me mande gabo
-const validarCodigoSucursal = async (idSucursal, codigoIngresado) => {
-    
-    return codigoIngresado === "1234"; 
+const validarCodigoSucursal = async (idSucursal, codigoIngresado, token) => {
+    try {
+        // OJO: Estás usando una IP de Tailscale/VPN (100.x.x.x) o local.
+        // Si tu amigo está en la misma red Docker, usa el nombre del servicio.
+        // Si está en otra PC (Tailscale), asegúrate que el contenedor tenga acceso.
+        const url = `http://100.68.70.25:8881/sucursales/${idSucursal}/validar-clave`;
+
+        console.log("--> 1. Intentando conectar a:", url);
+        console.log("--> 2. Token enviado:", token ? token.substring(0, 20) + "..." : "SIN TOKEN");
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token 
+            },
+            body: JSON.stringify({ 
+                clave: codigoIngresado 
+            })
+        });
+        
+        // --- AQUÍ ESTÁ LA CLAVE DEL DIAGNÓSTICO ---
+        if (!response.ok) {
+            const errorText = await response.text(); // Leemos qué dijo Python
+            console.error(`❌ Error API Sucursales. Status: ${response.status}`);
+            console.error(`❌ Mensaje del Backend Python: ${errorText}`);
+            return false;
+        }
+        
+        const data = await response.json();
+        console.log("✅ Respuesta API Sucursales:", data);
+        
+        return data.valida; 
+
+    } catch (error) {
+        console.error("❌ Error CRÍTICO de red o conexión:", error.message);
+        // Esto pasa si la IP es inalcanzable desde dentro del contenedor
+        return false;
+    }
 };
 
 
 //cancelamos una orden con la validcion de la sucursa, se supone que ella tendrá un code
-const cancelOrder = async (idOrden, idSucursal, codigoAutorizacion) => {
-    //validamos si la orden existe
+const cancelOrder = async (idOrden, idSucursal, codigoAutorizacion, token) => {
+    //validamos la orden
     const orden = await OrdenServicio.findByPk(idOrden);
     if (!orden) {
         throw new Error('La orden no existe');
     }
 
-    //validamos que no este ya entregada o cancelada
+    //validamos el estado actual
     const estadosTerminales = ['ENTREGADO', 'CANCELADO'];
     if (estadosTerminales.includes(orden.estado)) {
         throw new Error(`No se puede cancelar una orden que ya está en estado ${orden.estado}`);
     }
 
-    //verificamos con el code de seguridad
-    const codigoEsValido = await validarCodigoSucursal(idSucursal, codigoAutorizacion);
+    
+    // Pasamos el token a la función de arriba
+    const codigoEsValido = await validarCodigoSucursal(idSucursal, codigoAutorizacion, token);
     
     if (!codigoEsValido) {
-        throw new Error('Código de autorización de sucursal inválido');
+        throw new Error('Código de autorizacion no valido o usuario no autorizado en esa sucursal');
     }
 
-    //cancelamos
+    // la cancelamos
     orden.estado = 'CANCELADO';
     await orden.save();
 
