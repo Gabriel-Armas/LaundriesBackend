@@ -65,11 +65,4 @@ export class EmpleadoPrismaRepository implements EmpleadoRepository {
     });
     return rows.map(r => this.mapToEntity(r));
   }
-
-  async findManagers(): Promise<Empleado[]> {
-    const rows = await this.prisma.empleado.findMany({
-      where: { role: 'MANAGER' },
-    });
-    return rows.map((r) => this.mapToEntity(r));
-  }
 }

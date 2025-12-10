@@ -13,7 +13,6 @@ import { EditEmpleadoUseCase } from '../../../core/employees/use-cases/edit-empl
 import { EditGerenteUseCase } from '../../../core/employees/use-cases/edit-gerente.usecase';
 import { GetEmpleadoGeneralUseCase } from '../../../core/employees/use-cases/get-empleado-general.usecase';
 import { GetAllEmpleadosUseCase } from '../../../core/employees/use-cases/get-all-empleados.usecase';
-import { GetManagersUseCase } from '../../../core/employees/use-cases/get-managers.usecase';
 
 import { JwtAuthGuard } from '../../../infrastructure/auth/jwt-auth.guard';
 
@@ -64,12 +63,6 @@ import { JwtAuthGuard } from '../../../infrastructure/auth/jwt-auth.guard';
       provide: GetAllEmpleadosUseCase,
       useFactory: (repo: EmpleadoPrismaRepository) =>
         new GetAllEmpleadosUseCase(repo),
-      inject: [EmpleadoPrismaRepository],
-    },
-    {
-      provide: GetManagersUseCase,
-      useFactory: (repo: EmpleadoPrismaRepository) =>
-        new GetManagersUseCase(repo),
       inject: [EmpleadoPrismaRepository],
     },
   ],
