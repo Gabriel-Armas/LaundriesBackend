@@ -286,32 +286,66 @@ const validarCodigoSucursal = async (idSucursal, codigoIngresado, token) => {
 
 
 //cancelamos una orden con la validcion de la sucursa, se supone que ella tendrá un code
+// Asegúrate de importar sequelize al inicio del archivo si no lo usabas en esta función
+// const { sequelize, ... } = require('../models'); 
+
 const cancelOrder = async (idOrden, idSucursal, codigoAutorizacion, token) => {
-    //validamos la orden
-    const orden = await OrdenServicio.findByPk(idOrden);
-    if (!orden) {
-        throw new Error('La orden no existe');
-    }
+    // 1. Iniciamos una transacción (Vital para integridad financiera)
+    const t = await sequelize.transaction();
 
-    //validamos el estado actual
-    const estadosTerminales = ['ENTREGADO', 'CANCELADO'];
-    if (estadosTerminales.includes(orden.estado)) {
-        throw new Error(`No se puede cancelar una orden que ya está en estado ${orden.estado}`);
-    }
+    try {
+        //buscamos la orden o sea el item
+        const orden = await OrdenServicio.findByPk(idOrden, { transaction: t });
+        
+        if (!orden) {
+            throw new Error('La orden no existe');
+        }
 
+        //validamos estado
+        const estadosTerminales = ['ENTREGADO', 'CANCELADO'];
+        if (estadosTerminales.includes(orden.estado)) {
+            throw new Error(`No se puede cancelar una orden que ya está en estado ${orden.estado}`);
+        }
+
+        //esta es una validación externa
+        const codigoEsValido = await validarCodigoSucursal(idSucursal, codigoAutorizacion, token);
+        
+        if (!codigoEsValido) {
+            throw new Error('Código de autorización no válido o usuario no autorizado.');
+        }
+
+
+        //buscamos la venta papa para descontar el dinero
+        const venta = await Venta.findByPk(orden.id_venta, { transaction: t });
+        
+        if (!venta) {
+            throw new Error('Venta asociada no encontrada (Error de integridad de datos)');
+        }
+
+        //miramos el descuento
+        const montoADescontar = parseFloat(orden.subtotal);
+        const nuevoTotal = parseFloat(venta.costo_total) - montoADescontar;
+
+        //actualizamos el total de la venta, verificamos que no de negativo
+        venta.costo_total = nuevoTotal < 0 ? 0 : nuevoTotal;
+        await venta.save({ transaction: t });
+
+        //ahora sí cambiamos el estado de la orden
+        orden.estado = 'CANCELADO';
     
-    // Pasamos el token a la función de arriba
-    const codigoEsValido = await validarCodigoSucursal(idSucursal, codigoAutorizacion, token);
-    
-    if (!codigoEsValido) {
-        throw new Error('Código de autorizacion no valido o usuario no autorizado en esa sucursal');
+        //mejor dejarlo con el valor original (el sub total)para historial de cuanto se perdio
+        await orden.save({ transaction: t });
+
+        //guardamos
+        await t.commit();
+
+        return orden;
+
+    } catch (error) {
+        //Si algo falla, revertimos cambios, o sea no se hace nada
+        await t.rollback();
+        throw error;
     }
-
-    // la cancelamos
-    orden.estado = 'CANCELADO';
-    await orden.save();
-
-    return orden;
 };
 
 
