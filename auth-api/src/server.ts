@@ -13,31 +13,41 @@ import { LoginUseCase } from "./application/useCases/Login/LoginUseCase";
 import { RefreshTokenUseCase } from "./application/useCases/RefreshToken/RefreshTokenUseCase";
 import { JwtTokenService } from "./infrastructure/services/jwt/JwtTokenService";
 import { ChangeAccountRoleUseCase } from "./application/useCases/ChangeRole/ChangeAccountRoleUseCase";
+import { GetAccountRoleByIdUseCase } from "./application/useCases/GetAccountRoleById/GetAccountRoleByIdUseCase";
 
 async function bootstrap() {
   try {
     await sequelize.authenticate();
     console.log("Connected to database");
+
     await sequelize.sync({ alter: true });
     console.log("Database synchronized");
 
     const accountRepository = new AccountRepositorySequelize();
     const cryptoService = new BcryptCryptographyService();
     const tokenService = new JwtTokenService();
+
     const createAccountUseCase = new CreateAccountUseCase(
       accountRepository,
       cryptoService
     );
+
     const loginUseCase = new LoginUseCase(
       accountRepository,
       cryptoService,
       tokenService
     );
+
     const refreshTokenUseCase = new RefreshTokenUseCase(
       accountRepository,
       tokenService
     );
+
     const changeAccountRoleUseCase = new ChangeAccountRoleUseCase(
+      accountRepository
+    );
+
+    const getAccountRoleByIdUseCase = new GetAccountRoleByIdUseCase(
       accountRepository
     );
 
@@ -57,18 +67,22 @@ async function bootstrap() {
       res.json({ message: "Auth service running" });
     });
 
+    // ✅ Ahora sí: 6 argumentos (incluye getAccountRoleByIdUseCase y tokenService)
     const authRouter = createAuthRouter(
       createAccountUseCase,
       loginUseCase,
       refreshTokenUseCase,
       changeAccountRoleUseCase,
+      getAccountRoleByIdUseCase,
       tokenService
     );
+
     app.use("/auth", authRouter);
 
-    const PORT = process.env.PORT || 3000;
     app.use("/auth/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-    app.listen(PORT, () => {
+
+    const PORT = Number(process.env.PORT) || 3000;
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`Auth service running on port ${PORT}`);
     });
   } catch (error) {

@@ -3,6 +3,7 @@ import { CreateAccountUseCase } from "../../../../application/useCases/CreateAcc
 import { LoginUseCase } from "../../../../application/useCases/Login/LoginUseCase";
 import { RefreshTokenUseCase } from "../../../../application/useCases/RefreshToken/RefreshTokenUseCase";
 import { ChangeAccountRoleUseCase } from "../../../../application/useCases/ChangeRole/ChangeAccountRoleUseCase";
+import { GetAccountRoleByIdUseCase } from "../../../../application/useCases/GetAccountRoleById/GetAccountRoleByIdUseCase";
 import { AuthRequest } from "../middelware/authMiddleware";
 
 export class AuthController {
@@ -10,7 +11,8 @@ export class AuthController {
     private readonly createAccountUseCase: CreateAccountUseCase,
     private readonly loginUseCase: LoginUseCase,
     private readonly refreshTokenUseCase: RefreshTokenUseCase,
-    private readonly changeAccountRoleUseCase: ChangeAccountRoleUseCase
+    private readonly changeAccountRoleUseCase: ChangeAccountRoleUseCase,
+    private readonly getAccountRoleByIdUseCase: GetAccountRoleByIdUseCase
   ) {}
 
   register = async (req: AuthRequest, res: Response) => {
@@ -213,6 +215,47 @@ export class AuthController {
           code: "INTERNAL_ERROR",
           message: "Internal server error",
         },
+      });
+    }
+  };
+
+  getRoleById = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const result = await this.getAccountRoleByIdUseCase.execute({
+        accountId: id,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error: any) {
+      if (error.message === "INVALID_INPUT") {
+        return res.status(400).json({
+          success: false,
+          error: { code: "INVALID_INPUT", message: "Account id is required" },
+        });
+      }
+
+      if (error.message === "ACCOUNT_NOT_FOUND") {
+        return res.status(404).json({
+          success: false,
+          error: { code: "ACCOUNT_NOT_FOUND", message: "Account not found" },
+        });
+      }
+
+      if (error.message === "ACCOUNT_DELETED") {
+        return res.status(403).json({
+          success: false,
+          error: { code: "ACCOUNT_DELETED", message: "Account is deleted" },
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        error: { code: "INTERNAL_ERROR", message: "Internal server error" },
       });
     }
   };

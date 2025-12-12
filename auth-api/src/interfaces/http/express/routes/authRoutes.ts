@@ -4,6 +4,7 @@ import { CreateAccountUseCase } from "../../../../application/useCases/CreateAcc
 import { LoginUseCase } from "../../../../application/useCases/Login/LoginUseCase";
 import { RefreshTokenUseCase } from "../../../../application/useCases/RefreshToken/RefreshTokenUseCase";
 import { ChangeAccountRoleUseCase } from "../../../../application/useCases/ChangeRole/ChangeAccountRoleUseCase";
+import { GetAccountRoleByIdUseCase } from "../../../../application/useCases/GetAccountRoleById/GetAccountRoleByIdUseCase";
 import { JwtTokenService } from "../../../../infrastructure/services/jwt/JwtTokenService";
 import { requireAuth } from "../middelware/authMiddleware";
 
@@ -12,6 +13,7 @@ export function createAuthRouter(
   loginUseCase: LoginUseCase,
   refreshTokenUseCase: RefreshTokenUseCase,
   changeAccountRoleUseCase: ChangeAccountRoleUseCase,
+  getAccountRoleByIdUseCase: GetAccountRoleByIdUseCase,
   tokenService: JwtTokenService
 ) {
   const router = Router();
@@ -19,7 +21,8 @@ export function createAuthRouter(
     createAccountUseCase,
     loginUseCase,
     refreshTokenUseCase,
-    changeAccountRoleUseCase
+    changeAccountRoleUseCase,
+    getAccountRoleByIdUseCase
   );
 
   /**
@@ -197,6 +200,8 @@ export function createAuthRouter(
    *         description: Error interno del servidor
    */
   router.patch("/:id/role", requireAuth(tokenService), controller.changeRole);
+
+  router.get("/:id/role", requireAuth(tokenService), controller.getRoleById);
 
   return router;
 }
