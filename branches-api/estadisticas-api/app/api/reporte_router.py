@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, Request
 from datetime import datetime
-from core.security import require_admin
+from core.security import require_admin, require_manageradmin
 from services.reporte_service import generar_reporte_anual
 import logging
 
@@ -31,7 +31,7 @@ async def obtener_reporte_ventas_anuales_por_sucursal(
     request: Request,
     sucursal_id: str,
     anio: int | None = Query(None),
-    user=Depends(require_admin)
+    user=Depends(require_manageradmin)
 ):
     token = request.headers.get("Authorization").replace("Bearer ", "")
 

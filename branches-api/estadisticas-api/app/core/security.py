@@ -23,3 +23,9 @@ def require_admin(current_user: dict = Depends(get_current_user)):
         logger.warning(f"Acceso denegado para user={current_user.get('sub')} role={current_user.get('role')}")
         raise HTTPException(403, "Solo ADMIN puede acceder a esta operación")
     return current_user
+
+def require_manageradmin(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "MANAGER" or current_user.get("role") != "MANAGER":
+        logger.warning(f"Acceso denegado para user={current_user.get('sub')} role={current_user.get('role')}")
+        raise HTTPException(403, "Solo ADMIN puede acceder a esta operación")
+    return current_user
